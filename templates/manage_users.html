@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Users</title>
+</head>
+<body>
+
+<h1>Admin Manage Users</h1>
+
+<a href="/add-user/">Add New User</a>
+
+<br><br>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Role</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for user in users %}
+    <tr>
+        <td>{{ user.user_id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.first_name }} {{ user.last_name }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.phone_number }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+            <a href="/edit-user/{{ user.user_id }}/">Edit</a>
+            |
+            <a href="/delete-user/{{ user.user_id }}/">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="/admin-profile/">Back to Admin Profile</a>
+
+</body>
+</html>

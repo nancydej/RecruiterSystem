@@ -17,9 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from RecruiterSystem import views
 from RecruiterSystem.views import Login
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', Login.as_view(), name='login'),
+
+    path('profile/', views.user_profile, name='user_profile'),
+    path('admin-profile/', views.admin_profile, name='admin_profile'),
+    path('manage-users/', views.manage_users, name='manage_users'),
+    path('add-user/', views.add_user, name='add_user'),
+    path('edit-user/<int:user_id>/', views.edit_user, name='edit_user'),
+    path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
 ]

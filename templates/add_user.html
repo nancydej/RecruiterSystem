@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add User</title>
+</head>
+<body>
+
+<h1>Add New User</h1>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <p>Username:</p>
+    <input type="text" name="username" required>
+
+    <p>First Name:</p>
+    <input type="text" name="first_name">
+
+    <p>Last Name:</p>
+    <input type="text" name="last_name">
+
+    <p>Email:</p>
+    <input type="email" name="email" required>
+
+    <p>Password:</p>
+    <input type="text" name="password" required>
+
+    <p>Phone Number:</p>
+    <input type="text" name="phone_number" required>
+
+    <p>Role:</p>
+    <select name="role" required>
+        <option value="Admin">Admin</option>
+        <option value="Event Coordinator">Event Coordinator</option>
+        <option value="Recruiter">Recruiter</option>
+    </select>
+
+    <br><br>
+
+    <button type="submit">Add User</button>
+</form>
+
+<br>
+
+<a href="/manage-users/">Back</a>
+
+</body>
+</html>
