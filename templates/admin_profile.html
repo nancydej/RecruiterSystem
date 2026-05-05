@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Profile</title>
+</head>
+<body>
+
+<h1>Admin Profile</h1>
+
+<p><b>Admin ID:</b> {{ admin.user_id }}</p>
+<p><b>Username:</b> {{ admin.username }}</p>
+<p><b>Name:</b> {{ admin.first_name }} {{ admin.last_name }}</p>
+<p><b>Email:</b> {{ admin.email }}</p>
+<p><b>Phone:</b> {{ admin.phone_number }}</p>
+<p><b>Role:</b> {{ admin.role }}</p>
+
+<br>
+
+<a href="/manage-users/">Manage Users</a>
+<br>
+<a href="/profile/">Back to User Profile</a>
+
+</body>
+</html>
