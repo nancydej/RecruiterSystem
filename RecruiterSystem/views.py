@@ -1,3 +1,4 @@
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import User, Event, Registration
 from django.shortcuts import get_object_or_404
@@ -123,48 +124,38 @@ def delete_user(request, user_id):
 #++++++++++++++++++++++++++++++++++++++++++++
 #           REGISTER FOR EVENT(S)
 #++++++++++++++++++++++++++++++++++++++++++++
-
 def register_event(request, event_id):
 
-    #+++++++++++++++ TEMP USER (LOGIN NOT IMPLEMENTED) +++++++++++++++
-    user_id = 3  # Recruiter example ID
+    user_id = 3  # TEMP USER
+    user = get_object_or_404(User, pk=user_id)
+    event = get_object_or_404(Event, pk=event_id)
 
-    with connection.cursor() as cursor:
+    # prevent duplicate registration
+    exists = Registration.objects.filter(
+        recruiter=user,
+        event=event
+    ).exists()
 
-        #+++++++++++++++ prevent duplicate registration +++++++++++++++
-        cursor.execute("""
-            SELECT 1 FROM registrations
-            WHERE recruiter_id = %s AND event_id = %s
-        """, [user_id, event_id])
+    if exists:
+        return redirect("my_registrations")
 
-        if cursor.fetchone():
-            return redirect("my_registrations")
+    # capacity logic
+    approved_count = Registration.objects.filter(
+        event=event,
+        status="APPROVED"
+    ).count()
 
-        #+++++++++++++++ get event capacity +++++++++++++++
-        cursor.execute("""
-            SELECT capacity FROM events WHERE event_id = %s
-        """, [event_id])
-        capacity = cursor.fetchone()[0]
+    if approved_count < event.capacity:
+        status = "APPROVED"
+    else:
+        status = "PENDING"
 
-        #+++++++++++++++ count approved registrations +++++++++++++++
-        cursor.execute("""
-            SELECT COUNT(*) FROM registrations
-            WHERE event_id = %s AND status = 'Approved'
-        """, [event_id])
-        approved_count = cursor.fetchone()[0]
-
-        #+++++++++++++++ decide status +++++++++++++++
-        if approved_count < capacity:
-            status = "Approved"
-        else:
-            status = "Pending"
-
-        #+++++++++++++++ insert registration +++++++++++++++
-        cursor.execute("""
-            INSERT INTO registrations
-            (recruiter_id, event_id, status, registration_datetime)
-            VALUES (%s, %s, %s, NOW())
-        """, [user_id, event_id, status])
+    Registration.objects.create(
+        recruiter=user,
+        event=event,
+        status=status,
+        registration_datetime=timezone.now()
+    )
 
     return redirect("my_registrations")
 
@@ -174,45 +165,24 @@ def register_event(request, event_id):
 #++++++++++++++++++++++++++++++++++++++++++++
 def cancel_registration(request, registration_id):
 
-    user_id = 3  # TEMP USER
+    user_id = 3
+    registration = get_object_or_404(Registration, pk=registration_id)
 
-    with connection.cursor() as cursor:
+    event_date = registration.event.event_datetime
 
-        #+++++++++++++++ get event date +++++++++++++++
-        cursor.execute("""
-            SELECT e.event_date
-            FROM events e
-            JOIN registrations r ON e.event_id = r.event_id
-            WHERE r.registration_id = %s
-        """, [registration_id])
+    days_before = (event_date - timezone.now()).days
 
-        result = cursor.fetchone()
+    if days_before >= 14:
+        status = "CANCELLED_FULL_REFUND"
+    elif 7 <= days_before < 14:
+        status = "CANCELLED_PARTIAL_REFUND"
+    else:
+        status = "CANCELLED_NO_REFUND"
 
-        if not result:
-            return redirect("my_registrations")
-
-        event_date = result[0]
-
-        #+++++++++++++++ calculate days before event +++++++++++++++
-        cursor.execute("SELECT DATEDIFF(%s, NOW())", [event_date])
-        days_before = cursor.fetchone()[0]
-
-        #+++++++++++++++ refund logic +++++++++++++++
-        if days_before >= 14:
-            status = "Cancelled_Full_Refund"
-        elif 7 <= days_before < 14:
-            status = "Cancelled_Partial_Refund"
-        else:
-            status = "Cancelled_No_Refund"
-
-        #+++++++++++++++ update registration +++++++++++++++
-        cursor.execute("""
-            UPDATE registrations
-            SET status = %s,
-                cancel_datetime = NOW(),
-                cancelled_by = 'recruiter'
-            WHERE registration_id = %s
-        """, [status, registration_id])
+    registration.status = status
+    registration.cancel_datetime = timezone.now()
+    registration.cancelled_by_id = user_id
+    registration.save()
 
     return redirect("my_registrations")
 
@@ -221,26 +191,23 @@ def cancel_registration(request, registration_id):
 #++++++++++++++++++++++++++++++++++++++++++++
 def my_registrations(request):
 
-    user_id = 3  # TEMP USER
+    user_id = 3
+    user = get_object_or_404(User, pk=user_id)
+
+    registrations_qs = Registration.objects.select_related("event").filter(
+        recruiter=user
+    )
 
     registrations = []
 
-    with connection.cursor() as cursor:
-
-        #+++++++++++++++ fetch user registrations +++++++++++++++
-        cursor.execute("""
-            SELECT r.registration_id, e.event_name, r.status, r.registration_datetime
-            FROM registrations r
-            JOIN events e ON r.event_id = e.event_id
-            WHERE r.recruiter_id = %s
-        """, [user_id])
-
-        columns = [col[0] for col in cursor.description]
-
-        for row in cursor.fetchall():
-            registrations.append(dict(zip(columns, row)))
+    for r in registrations_qs:
+        registrations.append({
+            "registration_id": r.registration_id,
+            "event_name": r.event.event_name,
+            "status": r.status,
+            "registration_datetime": r.registration_datetime,
+        })
 
     return render(request, "my_registrations.html", {
         "registrations": registrations
     })
-
