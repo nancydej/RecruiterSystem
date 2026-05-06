@@ -116,3 +116,55 @@ def delete_user(request, user_id):
     return redirect("manage_users")
 
 
+#++++++++++++++++++++++++++++++++++++++++++++
+#            REGISTRATIONS
+#++++++++++++++++++++++++++++++++++++++++++++
+
+#++++++++++++++++++++++++++++++++++++++++++++
+#           REGISTER FOR EVENT(S)
+#++++++++++++++++++++++++++++++++++++++++++++
+
+def register_event(request, event_id):
+
+    #+++++++++++++++ TEMP USER (LOGIN NOT IMPLEMENTED) +++++++++++++++
+    user_id = 3  # Recruiter example ID
+
+    with connection.cursor() as cursor:
+
+        #+++++++++++++++ prevent duplicate registration +++++++++++++++
+        cursor.execute("""
+            SELECT 1 FROM registrations
+            WHERE recruiter_id = %s AND event_id = %s
+        """, [user_id, event_id])
+
+        if cursor.fetchone():
+            return redirect("my_registrations")
+
+        #+++++++++++++++ get event capacity +++++++++++++++
+        cursor.execute("""
+            SELECT capacity FROM events WHERE event_id = %s
+        """, [event_id])
+        capacity = cursor.fetchone()[0]
+
+        #+++++++++++++++ count approved registrations +++++++++++++++
+        cursor.execute("""
+            SELECT COUNT(*) FROM registrations
+            WHERE event_id = %s AND status = 'Approved'
+        """, [event_id])
+        approved_count = cursor.fetchone()[0]
+
+        #+++++++++++++++ decide status +++++++++++++++
+        if approved_count < capacity:
+            status = "Approved"
+        else:
+            status = "Pending"
+
+        #+++++++++++++++ insert registration +++++++++++++++
+        cursor.execute("""
+            INSERT INTO registrations
+            (recruiter_id, event_id, status, registration_datetime)
+            VALUES (%s, %s, %s, NOW())
+        """, [user_id, event_id, status])
+
+    return redirect("my_registrations")
+
