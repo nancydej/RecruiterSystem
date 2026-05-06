@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import View
 from django.utils import timezone
 from .models import User, Event, Registration
-from django.shortcuts import get_object_or_404
 
 #++++++++++++++++++++++++++++++++++++++++++++
 #                AUTH / USERS
