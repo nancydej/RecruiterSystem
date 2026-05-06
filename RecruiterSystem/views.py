@@ -1,6 +1,6 @@
-from django.shortcuts import render, redirect
-from django.views.generic import View
-from django.db import connection
+from django.utils import timezone
+from .models import User, Event, Registration
+from django.shortcuts import get_object_or_404
 
 #++++++++++++++++++++++++++++++++++++++++++++
 #                AUTH / USERS
