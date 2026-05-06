@@ -1,11 +1,65 @@
 from django.shortcuts import render, redirect
-from django.views.generic import View
+from django.views import View
+from .models import User, Role
 from django.db import connection
 
 class Login(View):
     def get(self, request):
         return render(request, "login.html")
 
+    def post(self, request):
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        user = User.objects.filter(email=email, password=password).first()
+
+        if not user:
+            return render(request, "login.html", {"error": "Invalid email or password"})
+
+        request.session["user_id"] = user.user_id
+        request.session["role"] = user.role
+
+        #redirect by role
+        if user.role == Role.ADMIN:
+            return redirect("admin_profile")
+        elif user.role == Role.EVENT_COORDINATOR:
+            return redirect("event_coordinator_profile")
+        else:
+            return redirect("user_profile")
+
+class Logout(View):
+    def get(self, request):
+        request.session.flush()
+        return redirect("login")
+
+class Signup(View):
+    def get(self, request):
+        return render(request, "signup.html")
+
+    def post(self, request):
+        username = request.POST.get("username")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        phone_number = request.POST.get("phone_number")
+        role = request.POST.get("role")
+
+        #prevent duplicate accounts using email
+        if User.objects.filter(email=email).exists():
+            return render(request, "signup.html", {"error": "Email already exists"})
+
+        #create user
+        User.objects.create(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                password=password,
+                phone_number=phone_number,
+                role=role)
+
+        return redirect("login")
 
 def user_profile(request):
     user = {}
