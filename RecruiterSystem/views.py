@@ -116,9 +116,9 @@ def delete_user(request, user_id):
     return redirect("manage_users")
 
 
-#++++++++++++++++++++++++++++++++++++++++++++
-#            REGISTRATIONS
-#++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                           REGISTRATIONS
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #++++++++++++++++++++++++++++++++++++++++++++
 #           REGISTER FOR EVENT(S)
@@ -168,3 +168,50 @@ def register_event(request, event_id):
 
     return redirect("my_registrations")
 
+
+#++++++++++++++++++++++++++++++++++++++++++++
+#           CANCEL REGISTRATION(S)
+#++++++++++++++++++++++++++++++++++++++++++++
+def cancel_registration(request, registration_id):
+
+    user_id = 3  # TEMP USER
+
+    with connection.cursor() as cursor:
+
+        #+++++++++++++++ get event date +++++++++++++++
+        cursor.execute("""
+            SELECT e.event_date
+            FROM events e
+            JOIN registrations r ON e.event_id = r.event_id
+            WHERE r.registration_id = %s
+        """, [registration_id])
+
+        result = cursor.fetchone()
+
+        if not result:
+            return redirect("my_registrations")
+
+        event_date = result[0]
+
+        #+++++++++++++++ calculate days before event +++++++++++++++
+        cursor.execute("SELECT DATEDIFF(%s, NOW())", [event_date])
+        days_before = cursor.fetchone()[0]
+
+        #+++++++++++++++ refund logic +++++++++++++++
+        if days_before >= 14:
+            status = "Cancelled_Full_Refund"
+        elif 7 <= days_before < 14:
+            status = "Cancelled_Partial_Refund"
+        else:
+            status = "Cancelled_No_Refund"
+
+        #+++++++++++++++ update registration +++++++++++++++
+        cursor.execute("""
+            UPDATE registrations
+            SET status = %s,
+                cancel_datetime = NOW(),
+                cancelled_by = 'recruiter'
+            WHERE registration_id = %s
+        """, [status, registration_id])
+
+    return redirect("my_registrations")
