@@ -215,3 +215,32 @@ def cancel_registration(request, registration_id):
         """, [status, registration_id])
 
     return redirect("my_registrations")
+
+#++++++++++++++++++++++++++++++++++++++++++++
+#           VIEW REGISTRATION(S)
+#++++++++++++++++++++++++++++++++++++++++++++
+def my_registrations(request):
+
+    user_id = 3  # TEMP USER
+
+    registrations = []
+
+    with connection.cursor() as cursor:
+
+        #+++++++++++++++ fetch user registrations +++++++++++++++
+        cursor.execute("""
+            SELECT r.registration_id, e.event_name, r.status, r.registration_datetime
+            FROM registrations r
+            JOIN events e ON r.event_id = e.event_id
+            WHERE r.recruiter_id = %s
+        """, [user_id])
+
+        columns = [col[0] for col in cursor.description]
+
+        for row in cursor.fetchall():
+            registrations.append(dict(zip(columns, row)))
+
+    return render(request, "my_registrations.html", {
+        "registrations": registrations
+    })
+
