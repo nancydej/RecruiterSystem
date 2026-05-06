@@ -1,10 +1,17 @@
 from django.shortcuts import render, redirect
 from django.views.generic import View
+from .models import User
 from django.db import connection
 
 class Login(View):
     def get(self, request):
         return render(request, "login.html")
+
+    def post(self, request):
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        user = User.objects.filter(email=email, password=password).first()
 
 
 def user_profile(request):
