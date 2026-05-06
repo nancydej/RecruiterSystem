@@ -24,7 +24,12 @@ class User(models.Model):
 
 class Event(models.Model):
     event_id = models.AutoField(primary_key=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.DO_NOTHING,
+        db_column="created_by"
+    )
 
     event_name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
@@ -40,27 +45,43 @@ class Event(models.Model):
 class Registration(models.Model):
     registration_id = models.AutoField(primary_key=True)
 
-    recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    recruiter = models.ForeignKey(
+        User,
+        on_delete=models.DO_NOTHING,
+        db_column="recruiter_id"
+    )
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.DO_NOTHING,
+        db_column="event_id"
+    )
 
     STATUS_CHOICES = [
         ("PENDING", "PENDING"),
         ("APPROVED", "APPROVED"),
-        ("CANCELLED_FULL_REFUND", "CANCELLED_FULL_REFUND"),
-        ("CANCELLED_PARTIAL_REFUND", "CANCELLED_PARTIAL_REFUND"),
-        ("CANCELLED_NO_REFUND", "CANCELLED_NO_REFUND"),
+        ("CANCELLED", "CANCELLED"),
     ]
 
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="PENDING")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="PENDING"
+    )
+
     registration_datetime = models.DateTimeField(auto_now_add=True)
+
     cancel_datetime = models.DateTimeField(null=True, blank=True)
+
     cancelled_by = models.ForeignKey(
         User,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="cancelled_registrations"
+        related_name="cancelled_by",
+        db_column="cancelled_by"
     )
 
     class Meta:
         db_table = "registrations"
+        unique_together = ("recruiter", "event")
