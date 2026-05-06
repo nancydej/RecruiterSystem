@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from django.views.generic import View
 from django.db import connection
 
+#++++++++++++++++++++++++++++++++++++++++++++
+#                AUTH / USERS
+#++++++++++++++++++++++++++++++++++++++++++++
 class Login(View):
     def get(self, request):
         return render(request, "login.html")
@@ -111,3 +114,5 @@ def delete_user(request, user_id):
         cursor.execute("DELETE FROM users WHERE user_id = %s", [user_id])
 
     return redirect("manage_users")
+
+
