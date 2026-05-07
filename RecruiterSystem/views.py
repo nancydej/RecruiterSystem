@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.views import View
-from .models import User, Role
+from .models import User, Role, Event, Registration
 from django.db import connection
+from django.utils import timezone
 
 class Login(View):
     def get(self, request):
@@ -165,3 +166,83 @@ def delete_user(request, user_id):
         cursor.execute("DELETE FROM users WHERE user_id = %s", [user_id])
 
     return redirect("manage_users")
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                       REGISTRATIONS
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+def register_event(request, event_id):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
+
+    user = User.objects.get(pk=user_id)
+    event = Event.objects.get(pk=event_id)
+
+    # prevent duplicate registration
+    if Registration.objects.filter(recruiter=user, event=event).exists():
+        return redirect("my_registrations")
+
+    # capacity logic
+    approved_count = Registration.objects.filter(
+        event=event,
+        status="APPROVED"
+    ).count()
+
+    status = "APPROVED" if approved_count < event.capacity else "PENDING"
+
+    Registration.objects.create(
+        recruiter=user,
+        event=event,
+        status=status
+    )
+
+    return redirect("my_registrations")
+
+def cancel_registration(request, registration_id):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
+
+    registration = Registration.objects.get(pk=registration_id)
+    event_date = registration.event.event_datetime
+
+    days_before = (event_date.date() - timezone.now().date()).days
+
+    if days_before >= 14:
+        status = "CANCELLED_FULL_REFUND"
+    elif 7 <= days_before < 14:
+        status = "CANCELLED_PARTIAL_REFUND"
+    else:
+        status = "CANCELLED_NO_REFUND"
+
+    registration.status = status
+    registration.cancel_datetime = timezone.now()
+    registration.cancelled_by_id = user_id
+    registration.save()
+
+    return redirect("my_registrations")
+
+def my_registrations(request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
+
+    user = User.objects.get(pk=user_id)
+
+    registrations_qs = Registration.objects.select_related("event").filter(
+        recruiter=user
+    )
+
+    registrations = []
+
+    for r in registrations_qs:
+        registrations.append({
+            "registration_id": r.registration_id,
+            "event_name": r.event.event_name,
+            "status": r.status,
+            "registration_datetime": r.registration_datetime,
+        })
+
+    return render(request, "my_registrations.html", {
+        "registrations": registrations
+    })

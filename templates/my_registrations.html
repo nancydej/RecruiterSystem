@@ -1,0 +1,51 @@
+<!-- ++++++++++++++++++++++++++++++++++++++++++++ -->
+<!--              REGISTRATIONS PAGE              -->
+<!-- ++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrations</title>
+</head>
+<body>
+<!-- +++++++++++++++ HEADER +++++++++++++++ -->
+<h1>My Event Registrations</h1>
+
+<!-- +++++++++++++++ TABLE START +++++++++++++++ -->
+<table border="1" cellpadding="10">
+
+    <tr>
+        <th>Registration ID</th>
+        <th>Event Name</th>
+        <th>Status</th>
+        <th>Date Registered</th>
+        <th>Action</th>
+    </tr>
+
+    <!-- +++++++++++++++ DATA LOOP +++++++++++++++ -->
+    {% for reg in registrations %}
+
+    <tr>
+        <td>{{ reg.registration_id }}</td>
+        <td>{{ reg.event_name }}</td>
+        <td>{{ reg.status }}</td>
+        <td>{{ reg.registration_datetime }}</td>
+
+        <td>
+            <!-- Cancel button -->
+            <a href="/cancel/{{ reg.registration_id }}/">
+                Cancel
+            </a>
+        </td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+<!-- +++++++++++++++ BACK BUTTON +++++++++++++++ -->
+<br>
+<a href="/profile/">Back to Profile</a>
+</body>
+</html>
