@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Registrations</title>
+</head>
+<body>
+
+<h1>My Event Registrations</h1>
+
+<table border="1">
+    <tr>
+        <th>Registration ID</th>
+        <th>Event Name</th>
+        <th>Status</th>
+        <th>Registered On</th>
+    </tr>
+
+    {% for r in registrations %}
+    <tr>
+        <td>{{ r.registration_id }}</td>
+        <td>{{ r.event_name }}</td>
+        <td>{{ r.status }}</td>
+        <td>{{ r.registration_datetime }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
