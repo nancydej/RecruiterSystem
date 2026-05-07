@@ -1,15 +1,66 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import View
+from django.shortcuts import render, redirect
+from django.views import View
+from .models import User, Role, Event, Registration
+from django.db import connection
 from django.utils import timezone
-from .models import User, Event, Registration
 
-#++++++++++++++++++++++++++++++++++++++++++++
-#                AUTH / USERS
-#++++++++++++++++++++++++++++++++++++++++++++
 class Login(View):
     def get(self, request):
         return render(request, "login.html")
 
+    def post(self, request):
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        user = User.objects.filter(email=email, password=password).first()
+
+        if not user:
+            return render(request, "login.html", {"error": "Invalid email or password"})
+
+        request.session["user_id"] = user.user_id
+        request.session["role"] = user.role
+
+        #redirect by role
+        if user.role == Role.ADMIN:
+            return redirect("admin_profile")
+        elif user.role == Role.EVENT_COORDINATOR:
+            return redirect("event_coordinator_profile")
+        else:
+            return redirect("user_profile")
+
+class Logout(View):
+    def get(self, request):
+        request.session.flush()
+        return redirect("login")
+
+class Signup(View):
+    def get(self, request):
+        return render(request, "signup.html")
+
+    def post(self, request):
+        username = request.POST.get("username")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        phone_number = request.POST.get("phone_number")
+        role = request.POST.get("role")
+
+        #prevent duplicate accounts using email
+        if User.objects.filter(email=email).exists():
+            return render(request, "signup.html", {"error": "Email already exists"})
+
+        #create user
+        User.objects.create(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                password=password,
+                phone_number=phone_number,
+                role=role)
+
+        return redirect("login")
 
 def user_profile(request):
     user = {}
@@ -116,27 +167,19 @@ def delete_user(request, user_id):
 
     return redirect("manage_users")
 
-
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#                           REGISTRATIONS
+#                       REGISTRATIONS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-#++++++++++++++++++++++++++++++++++++++++++++
-#           REGISTER FOR EVENT(S)
-#++++++++++++++++++++++++++++++++++++++++++++
 def register_event(request, event_id):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
 
-    user_id = 3  # TEMP USER
-    user = get_object_or_404(User, pk=user_id)
-    event = get_object_or_404(Event, pk=event_id)
+    user = User.objects.get(pk=user_id)
+    event = Event.objects.get(pk=event_id)
 
     # prevent duplicate registration
-    exists = Registration.objects.filter(
-        recruiter=user,
-        event=event
-    ).exists()
-
-    if exists:
+    if Registration.objects.filter(recruiter=user, event=event).exists():
         return redirect("my_registrations")
 
     # capacity logic
@@ -145,32 +188,25 @@ def register_event(request, event_id):
         status="APPROVED"
     ).count()
 
-    if approved_count < event.capacity:
-        status = "APPROVED"
-    else:
-        status = "PENDING"
+    status = "APPROVED" if approved_count < event.capacity else "PENDING"
 
     Registration.objects.create(
         recruiter=user,
         event=event,
-        status=status,
-        registration_datetime=timezone.now()
+        status=status
     )
 
     return redirect("my_registrations")
 
-
-#++++++++++++++++++++++++++++++++++++++++++++
-#           CANCEL REGISTRATION(S)
-#++++++++++++++++++++++++++++++++++++++++++++
 def cancel_registration(request, registration_id):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
 
-    user_id = 3
-    registration = get_object_or_404(Registration, pk=registration_id)
-
+    registration = Registration.objects.get(pk=registration_id)
     event_date = registration.event.event_datetime
 
-    days_before = (event_date - timezone.now()).days
+    days_before = (event_date.date() - timezone.now().date()).days
 
     if days_before >= 14:
         status = "CANCELLED_FULL_REFUND"
@@ -186,13 +222,12 @@ def cancel_registration(request, registration_id):
 
     return redirect("my_registrations")
 
-#++++++++++++++++++++++++++++++++++++++++++++
-#           VIEW REGISTRATION(S)
-#++++++++++++++++++++++++++++++++++++++++++++
 def my_registrations(request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
 
-    user_id = 3
-    user = get_object_or_404(User, pk=user_id)
+    user = User.objects.get(pk=user_id)
 
     registrations_qs = Registration.objects.select_related("event").filter(
         recruiter=user

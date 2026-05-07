@@ -18,11 +18,13 @@ from django.contrib import admin
 from django.urls import path
 
 from RecruiterSystem import views
-from RecruiterSystem.views import Login
+from RecruiterSystem.views import Login, Signup, Logout
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', Login.as_view(), name='login'),
+    path('signup/', Signup.as_view(), name='signup'),
+    path('logout/', Logout.as_view(), name='logout'),
 
     path('profile/', views.user_profile, name='user_profile'),
     path('admin-profile/', views.admin_profile, name='admin_profile'),
