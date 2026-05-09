@@ -272,3 +272,23 @@ def add_event(request):
         return redirect("manage_events")
 
     return render(request, "add_event.html")
+
+
+def edit_event(request, event_id):
+    role = request.session.get("role")
+    if role not in ["Admin", "Event Coordinator"]:
+        return redirect("manage_events")
+
+    event = Event.objects.get(pk=event_id)
+
+    if request.method == "POST":
+        event.event_name = request.POST.get("event_name")
+        event.description = request.POST.get("description")
+        event.city = request.POST.get("city")
+        event.state = request.POST.get("state")
+        event.event_datetime = request.POST.get("event_datetime")
+        event.capacity = request.POST.get("capacity")
+        event.save()
+        return redirect("manage_events")
+
+    return render(request, "edit_event.html", {"event": event})
