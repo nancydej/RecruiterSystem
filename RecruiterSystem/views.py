@@ -246,3 +246,8 @@ def my_registrations(request):
     return render(request, "my_registrations.html", {
         "registrations": registrations
     })
+
+
+def manage_events(request):
+    events = Event.objects.select_related('created_by').all()
+    return render(request, "manage_events.html", {"events": events})
