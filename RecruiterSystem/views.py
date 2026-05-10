@@ -165,7 +165,7 @@ def edit_event(request, event_id):
     if role not in ["Admin", "Event Coordinator"]:
         return redirect("manage_events")
 
-    event = Event.objects.get(pk=event_id)
+    event = get_object_or_404(Event, pk=event_id)
 
     if request.method == "POST":
         event.event_name = request.POST.get("event_name")
