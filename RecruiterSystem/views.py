@@ -4,9 +4,12 @@ from .models import User, Role, Event, Registration
 from django.db import connection
 from django.utils import timezone
 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                       AUTHENTICATION
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Login(View):
     def get(self, request):
-        return render(request, "login.html")
+        return render(request, "auth/login.html")
 
     def post(self, request):
         email = request.POST.get("email")
@@ -15,7 +18,7 @@ class Login(View):
         user = User.objects.filter(email=email, password=password).first()
 
         if not user:
-            return render(request, "login.html", {"error": "Invalid email or password"})
+            return render(request, "auth/login.html", {"error": "Invalid email or password"})
 
         request.session["user_id"] = user.user_id
         request.session["role"] = user.role
@@ -35,7 +38,7 @@ class Logout(View):
 
 class Signup(View):
     def get(self, request):
-        return render(request, "signup.html")
+        return render(request, "auth/signup.html")
 
     def post(self, request):
         username = request.POST.get("username")
@@ -48,7 +51,7 @@ class Signup(View):
 
         #prevent duplicate accounts using email
         if User.objects.filter(email=email).exists():
-            return render(request, "signup.html", {"error": "Email already exists"})
+            return render(request, "auth/signup.html", {"error": "Email already exists"})
 
         #create user
         User.objects.create(
@@ -62,6 +65,9 @@ class Signup(View):
 
         return redirect("login")
 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                           USERS
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def user_profile(request):
     user_id = request.session.get("user_id")
 
@@ -73,8 +79,7 @@ def user_profile(request):
     except User.DoesNotExist:
         return redirect("login")
 
-    return render(request, "user_profile.html", {"user": user})
-
+    return render(request, "users/user_profile.html", {"user": user})
 
 def admin_profile(request):
     user_id = request.session.get("user_id")
@@ -90,12 +95,12 @@ def admin_profile(request):
     if not admin:
         return redirect("login")
 
-    return render(request, "admin_profile.html", {"admin": admin})
+    return render(request, "users/admin_profile.html", {"admin": admin})
 
 
 def manage_users(request):
     users = User.objects.all()
-    return render(request, "manage_users.html", {"users": users})
+    return render(request, "users/manage_users.html", {"users": users})
 
 
 def add_user(request):
@@ -110,7 +115,7 @@ def add_user(request):
             role=request.POST.get("role"),
         )
         return redirect("manage_users")
-    return render(request, "add_user.html")
+    return render(request, "users/add_user.html")
 
 
 def edit_user(request, user_id):
@@ -126,7 +131,7 @@ def edit_user(request, user_id):
         user.save()
         return redirect("manage_users")
 
-    return render(request, "edit_user.html", {"user": user})
+    return render(request, "users/edit_user.html", {"user": user})
 
 def delete_user(request, user_id):
     user = get_object_or_404(User, user_id=user_id)
@@ -134,10 +139,12 @@ def delete_user(request, user_id):
     return redirect("manage_users")
 
 
-#MANAGING EVENTS- CRUD
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                      MANAGE EVENT - CRUD
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def manage_events(request):
     events = Event.objects.select_related('created_by').all()
-    return render(request, "manage_events.html", {"events": events})
+    return render(request, "events/manage_events.html", {"events": events})
 
 
 def add_event(request):
@@ -157,7 +164,7 @@ def add_event(request):
         )
         return redirect("manage_events")
 
-    return render(request, "add_event.html")
+    return render(request, "events/add_event.html")
 
 
 def edit_event(request, event_id):
@@ -177,7 +184,7 @@ def edit_event(request, event_id):
         event.save()
         return redirect("manage_events")
 
-    return render(request, "edit_event.html", {"event": event})
+    return render(request, "events/edit_event.html", {"event": event})
 
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -256,6 +263,6 @@ def my_registrations(request):
             "registration_datetime": r.registration_datetime,
         })
 
-    return render(request, "my_registrations.html", {
+    return render(request, "registrations/my_registrations.html", {
         "registrations": registrations
     })
