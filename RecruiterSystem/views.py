@@ -23,13 +23,8 @@ class Login(View):
         request.session["user_id"] = user.user_id
         request.session["role"] = user.role
 
-        #redirect by role
-        if user.role == Role.ADMIN:
-            return redirect("admin_profile")
-        elif user.role == Role.EVENT_COORDINATOR:
-            return redirect("event_coordinator_profile")
-        else:
-            return redirect("user_profile")
+        # UPDATED FLOW: send everyone to HOME first
+        return redirect("home")
 
 class Logout(View):
     def get(self, request):
@@ -64,6 +59,18 @@ class Signup(View):
                 role=role)
 
         return redirect("login")
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#                       HOMEPAGE (PUBLIC)
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+def home(request):
+    user_id = request.session.get("user_id")
+    events = Event.objects.all()
+
+    return render(request, "home.html", {
+        "events": events,
+        "user_id": user_id
+    })
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                           USERS
@@ -223,9 +230,17 @@ def cancel_registration(request, registration_id):
     if not user_id:
         return redirect("login")
 
-    registration = Registration.objects.get(pk=registration_id)
-    event_date = registration.event.event_datetime
+    registration = get_object_or_404(
+        Registration,
+        pk=registration_id,
+        recruiter_id=user_id
+    )
 
+    # prevent cancelling twice
+    if registration.status.startswith("CANCELLED"):
+        return redirect("my_registrations")
+
+    event_date = registration.event.event_datetime
     days_before = (event_date.date() - timezone.now().date()).days
 
     if days_before >= 14:
