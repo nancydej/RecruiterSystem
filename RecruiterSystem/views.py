@@ -63,15 +63,15 @@ class Signup(View):
         return redirect("login")
 
 def user_profile(request):
-    user = {}
+    user_id = request.session.get("user_id")
 
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM users LIMIT 1")
-        columns = [col[0] for col in cursor.description]
-        row = cursor.fetchone()
+    if not user_id:
+        return redirect("login")
 
-        if row:
-            user = dict(zip(columns, row))
+    try:
+        user = User.objects.get(user_id=user_id)
+    except User.DoesNotExist:
+        return redirect("login")
 
     return render(request, "user_profile.html", {"user": user})
 
