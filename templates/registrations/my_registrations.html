@@ -1,51 +1,84 @@
-<!-- ++++++++++++++++++++++++++++++++++++++++++++ -->
-<!--              REGISTRATIONS PAGE              -->
-<!-- ++++++++++++++++++++++++++++++++++++++++++++ -->
-
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Registrations</title>
+    <title>My Registrations</title>
+
+    <link rel="stylesheet" href="{% static 'registrations.css' %}">
 </head>
+
 <body>
-<!-- +++++++++++++++ HEADER +++++++++++++++ -->
-<h1>My Event Registrations</h1>
 
-<!-- +++++++++++++++ TABLE START +++++++++++++++ -->
-<table border="1" cellpadding="10">
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">Recruiter System</div>
 
-    <tr>
-        <th>Registration ID</th>
-        <th>Event Name</th>
-        <th>Status</th>
-        <th>Date Registered</th>
-        <th>Action</th>
-    </tr>
+    <ul class="nav-links">
+        <li><a href="/home/">Events</a></li>
+        <li><a href="/my_registrations/">Registrations</a></li>
+        <li><a href="/profile/">Profile</a></li>
+    </ul>
+</nav>
 
-    <!-- +++++++++++++++ DATA LOOP +++++++++++++++ -->
-    {% for reg in registrations %}
+<!-- PAGE TITLE -->
+<div class="page-title">
+    <h1>My Registrations</h1>
+</div>
 
-    <tr>
-        <td>{{ reg.registration_id }}</td>
-        <td>{{ reg.event_name }}</td>
-        <td>{{ reg.status }}</td>
-        <td>{{ reg.registration_datetime }}</td>
+<!-- CONTENT -->
+<section>
 
-        <td>
-            <!-- Cancel button -->
-            <a href="/cancel/{{ reg.registration_id }}/">
-                Cancel
-            </a>
-        </td>
-    </tr>
+    {% if registrations %}
 
-    {% endfor %}
+        <div class="registration-container">
 
-</table>
+            {% for r in registrations %}
+            <div class="registration-card">
 
-<!-- +++++++++++++++ BACK BUTTON +++++++++++++++ -->
-<br>
-<a href="/profile/">Back to Profile</a>
+                <div class="registration-banner">
+                    <h2>{{ r.event_name }}</h2>
+                </div>
+
+                <div class="registration-info">
+                    <p>
+                        <strong>Status:</strong>
+
+                        {% if r.status == "APPROVED" %}
+                            <span class="status approved">Approved</span>
+                        {% elif r.status == "PENDING" %}
+                            <span class="status pending">Pending</span>
+                        {% else %}
+                            <span class="status cancelled">{{ r.status }}</span>
+                        {% endif %}
+                    </p>
+
+                    <p><strong>Registered:</strong> {{ r.registration_datetime }}</p>
+                </div>
+
+                <div class="registration-actions">
+                    {% if r.status != "CANCELLED_NO_REFUND" %}
+                        <a href="/cancel/{{ r.registration_id }}/" class="btn cancel">
+                            Cancel
+                        </a>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+            <h3>No registrations yet</h3>
+            <p>Go register for an event to see them here.</p>
+        </div>
+
+    {% endif %}
+
+</section>
+
 </body>
 </html>
