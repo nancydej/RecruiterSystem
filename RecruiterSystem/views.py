@@ -167,6 +167,53 @@ def delete_user(request, user_id):
 
     return redirect("manage_users")
 
+
+#MANAGING EVENTS- CRUD
+def manage_events(request):
+    events = Event.objects.select_related('created_by').all()
+    return render(request, "manage_events.html", {"events": events})
+
+
+def add_event(request):
+    role = request.session.get("role")
+    if role not in ["Admin", "Event Coordinator"]:
+        return redirect("manage_events")
+
+    if request.method == "POST":
+        Event.objects.create(
+            created_by_id=request.session.get("user_id"),
+            event_name=request.POST.get("event_name"),
+            description=request.POST.get("description"),
+            city=request.POST.get("city"),
+            state=request.POST.get("state"),
+            event_datetime=request.POST.get("event_datetime"),
+            capacity=request.POST.get("capacity"),
+        )
+        return redirect("manage_events")
+
+    return render(request, "add_event.html")
+
+
+def edit_event(request, event_id):
+    role = request.session.get("role")
+    if role not in ["Admin", "Event Coordinator"]:
+        return redirect("manage_events")
+
+    event = Event.objects.get(pk=event_id)
+
+    if request.method == "POST":
+        event.event_name = request.POST.get("event_name")
+        event.description = request.POST.get("description")
+        event.city = request.POST.get("city")
+        event.state = request.POST.get("state")
+        event.event_datetime = request.POST.get("event_datetime")
+        event.capacity = request.POST.get("capacity")
+        event.save()
+        return redirect("manage_events")
+
+    return render(request, "edit_event.html", {"event": event})
+
+
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                       REGISTRATIONS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -246,49 +293,3 @@ def my_registrations(request):
     return render(request, "my_registrations.html", {
         "registrations": registrations
     })
-
-
-#MANAGING EVENTS- CRUD
-def manage_events(request):
-    events = Event.objects.select_related('created_by').all()
-    return render(request, "manage_events.html", {"events": events})
-
-
-def add_event(request):
-    role = request.session.get("role")
-    if role not in ["Admin", "Event Coordinator"]:
-        return redirect("manage_events")
-
-    if request.method == "POST":
-        Event.objects.create(
-            created_by_id=request.session.get("user_id"),
-            event_name=request.POST.get("event_name"),
-            description=request.POST.get("description"),
-            city=request.POST.get("city"),
-            state=request.POST.get("state"),
-            event_datetime=request.POST.get("event_datetime"),
-            capacity=request.POST.get("capacity"),
-        )
-        return redirect("manage_events")
-
-    return render(request, "add_event.html")
-
-
-def edit_event(request, event_id):
-    role = request.session.get("role")
-    if role not in ["Admin", "Event Coordinator"]:
-        return redirect("manage_events")
-
-    event = Event.objects.get(pk=event_id)
-
-    if request.method == "POST":
-        event.event_name = request.POST.get("event_name")
-        event.description = request.POST.get("description")
-        event.city = request.POST.get("city")
-        event.state = request.POST.get("state")
-        event.event_datetime = request.POST.get("event_datetime")
-        event.capacity = request.POST.get("capacity")
-        event.save()
-        return redirect("manage_events")
-
-    return render(request, "edit_event.html", {"event": event})
