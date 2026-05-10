@@ -2,18 +2,19 @@
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE,
-SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+SET @OLD_SQL_MODE=@@SQL_MODE;
+SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,
+ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 DROP SCHEMA IF EXISTS `group5`;
 CREATE SCHEMA IF NOT EXISTS `group5` DEFAULT CHARACTER SET utf8;
 USE `group5`;
 
 ##########################################################
-# Table: usersevents
+# Table: users
 ##########################################################
 
-CREATE TABLE IF NOT EXISTS `group5`.`users` (
+CREATE TABLE `users` (
   `user_id` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(50) NOT NULL,
   `first_name` VARCHAR(50) NULL,
@@ -22,47 +23,50 @@ CREATE TABLE IF NOT EXISTS `group5`.`users` (
   `password` VARCHAR(255) NOT NULL,
   `phone_number` VARCHAR(15) NOT NULL,
   `role` ENUM('Admin', 'Event Coordinator', 'Recruiter') NOT NULL,
+
   PRIMARY KEY (`user_id`),
-  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE,
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
-  INDEX `idx_role` (`role` ASC) VISIBLE
-)
-ENGINE = InnoDB;
+  UNIQUE INDEX `username_UNIQUE` (`username`),
+  UNIQUE INDEX `email_UNIQUE` (`email`),
+  INDEX `idx_role` (`role`)
+) ENGINE=InnoDB;
 
 ##########################################################
 # Table: events
 ##########################################################
 
-CREATE TABLE IF NOT EXISTS `group5`.`events` (
+CREATE TABLE `events` (
   `event_id` INT NOT NULL AUTO_INCREMENT,
   `created_by` INT NOT NULL,
   `event_name` VARCHAR(100) NOT NULL,
-  `description` TEXT NULL,
+  `description` TEXT,
   `city` VARCHAR(50) NOT NULL,
   `state` VARCHAR(50) NOT NULL,
   `event_datetime` DATETIME NOT NULL,
   `capacity` INT NOT NULL,
+
   PRIMARY KEY (`event_id`),
-  INDEX `createdbyfk_idx` (`created_by` ASC) VISIBLE,
-  INDEX `idx_eventdate` (`event_datetime` ASC) VISIBLE,
+  INDEX `idx_created_by` (`created_by`),
+  INDEX `idx_event_datetime` (`event_datetime`),
+
   CONSTRAINT `fk_created_by`
     FOREIGN KEY (`created_by`)
-    REFERENCES `group5`.`users` (`user_id`)
+    REFERENCES `users` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `chk_capacity_range`
+
+  CONSTRAINT `chk_capacity`
     CHECK (`capacity` BETWEEN 3 AND 10)
-)
-ENGINE = InnoDB;
+) ENGINE=InnoDB;
 
 ##########################################################
 # Table: registrations
 ##########################################################
 
-CREATE TABLE IF NOT EXISTS `group5`.`registrations` (
+CREATE TABLE `registrations` (
   `registration_id` INT NOT NULL AUTO_INCREMENT,
   `recruiter_id` INT NOT NULL,
   `event_id` INT NOT NULL,
+
   `status` ENUM(
     'PENDING',
     'APPROVED',
@@ -70,357 +74,247 @@ CREATE TABLE IF NOT EXISTS `group5`.`registrations` (
     'CANCELLED_PARTIAL_REFUND',
     'CANCELLED_NO_REFUND'
   ) NOT NULL DEFAULT 'PENDING',
+
   `registration_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `cancel_datetime` DATETIME NULL,
   `cancelled_by` INT NULL,
+
   PRIMARY KEY (`registration_id`),
-  INDEX `recruiterfk_idx` (`recruiter_id` ASC) VISIBLE,
-  INDEX `eventfk_idx` (`event_id` ASC) VISIBLE,
-  INDEX `cancelledbyfk_idx` (`cancelled_by` ASC) VISIBLE,
-  UNIQUE INDEX `idx_recruiter_event` (`recruiter_id` ASC, `event_id` ASC) VISIBLE,
-  CONSTRAINT `fk_recruiter_id`
-    FOREIGN KEY (`recruiter_id`)
-    REFERENCES `group5`.`users` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_event_id`
-    FOREIGN KEY (`event_id`)
-    REFERENCES `group5`.`events` (`event_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+
+  UNIQUE KEY `uq_recruiter_event` (`recruiter_id`, `event_id`),
+
+  INDEX `idx_recruiter` (`recruiter_id`),
+  INDEX `idx_event` (`event_id`),
+
+  CONSTRAINT `fk_recruiter`
+    FOREIGN KEY (`recruiter_id`) REFERENCES `users` (`user_id`),
+
+  CONSTRAINT `fk_event`
+    FOREIGN KEY (`event_id`) REFERENCES `events` (`event_id`),
+
   CONSTRAINT `fk_cancelled_by`
-    FOREIGN KEY (`cancelled_by`)
-    REFERENCES `group5`.`users` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-)
-ENGINE = InnoDB;
-
+    FOREIGN KEY (`cancelled_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB;
 
 ##########################################################
-# VIEW 1: Approved Registrations
+# Views
 ##########################################################
 
-CREATE VIEW `group5`.`approved_registrations` AS
-SELECT
-  `registration_id`,
-  `recruiter_id`,
-  `event_id`,
-  `status`,
-  `registration_datetime`
-FROM `group5`.`registrations`
-WHERE `status` = 'APPROVED';
+CREATE VIEW approved_registrations AS
+SELECT * FROM registrations
+WHERE status = 'APPROVED';
 
+CREATE VIEW pending_registrations AS
+SELECT * FROM registrations
+WHERE status = 'PENDING';
 
-##########################################################
-# VIEW 2: Pending Registrations
-##########################################################
+CREATE VIEW cancelled_registrations AS
+SELECT * FROM registrations
+WHERE status LIKE 'CANCELLED_%';
 
-CREATE VIEW `group5`.`pending_registrations` AS
-SELECT
-  `registration_id`,
-  `recruiter_id`,
-  `event_id`,
-  `status`,
-  `registration_datetime`
-FROM `group5`.`registrations`
-WHERE `status` = 'PENDING';
-
+CREATE VIEW event_info AS
+SELECT event_id, event_name, city, state, event_datetime, capacity
+FROM events;
 
 ##########################################################
-# VIEW 3: Cancelled Registrations
-##########################################################
-
-CREATE VIEW `group5`.`cancelled_registrations` AS
-SELECT
-  `registration_id`,
-  `recruiter_id`,
-  `event_id`,
-  `status`,
-  `registration_datetime`,
-  `cancel_datetime`,
-  `cancelled_by`
-FROM `group5`.`registrations`
-WHERE `status` IN (
-  'CANCELLED_FULL_REFUND',
-  'CANCELLED_PARTIAL_REFUND',
-  'CANCELLED_NO_REFUND'
-);
-
-
-##########################################################
-# VIEW 4: Event Info
-##########################################################
-
-CREATE VIEW `group5`.`event_info` AS
-SELECT
-  `event_id`,
-  `event_name`,
-  `city`,
-  `state`,
-  `event_datetime`,
-  `capacity`
-FROM `group5`.`events`;
-
-
-##########################################################
-# TRIGGER 1: Check recruiter role before registration
+# Triggers
 ##########################################################
 
 DELIMITER $$
 
-CREATE TRIGGER `group5`.`check_recruiter_role`
-BEFORE INSERT ON `group5`.`registrations`
+CREATE TRIGGER check_recruiter_role
+BEFORE INSERT ON registrations
 FOR EACH ROW
 BEGIN
-  DECLARE user_role VARCHAR(30);
+  DECLARE r VARCHAR(30);
 
-  SELECT `role`
-  INTO user_role
-  FROM `group5`.`users`
-  WHERE `user_id` = NEW.`recruiter_id`;
+  SELECT role INTO r
+  FROM users
+  WHERE user_id = NEW.recruiter_id;
 
-  IF user_role <> 'Recruiter' THEN
+  IF r <> 'Recruiter' THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Only recruiters can register for events';
+    SET MESSAGE_TEXT = 'Only recruiters can register';
   END IF;
 END$$
 
-
-##########################################################
-# TRIGGER 2: Set cancel datetime automatically
-##########################################################
-
-CREATE TRIGGER `group5`.`set_cancel_datetime`
-BEFORE UPDATE ON `group5`.`registrations`
+CREATE TRIGGER check_event_creator
+BEFORE INSERT ON events
 FOR EACH ROW
 BEGIN
-  IF NEW.`status` LIKE 'CANCELLED%' AND OLD.`status` NOT LIKE 'CANCELLED%' THEN
-    SET NEW.`cancel_datetime` = NOW();
-  END IF;
-END$$
+  DECLARE r VARCHAR(30);
 
+  SELECT role INTO r
+  FROM users
+  WHERE user_id = NEW.created_by;
 
-##########################################################
-# TRIGGER 3: Check event creator role
-##########################################################
-
-CREATE TRIGGER `group5`.`check_event_creator`
-BEFORE INSERT ON `group5`.`events`
-FOR EACH ROW
-BEGIN
-  DECLARE creator_role VARCHAR(30);
-
-  SELECT `role`
-  INTO creator_role
-  FROM `group5`.`users`
-  WHERE `user_id` = NEW.`created_by`;
-
-  IF creator_role <> 'Admin' AND creator_role <> 'Event Coordinator' THEN
+  IF r NOT IN ('Admin', 'Event Coordinator') THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Only Admin or Event Coordinator can create events';
+    SET MESSAGE_TEXT = 'Invalid event creator role';
   END IF;
 END$$
 
-
-##########################################################
-# TRIGGER 4: Check event capacity
-##########################################################
-
-CREATE TRIGGER `group5`.`check_event_capacity`
-BEFORE INSERT ON `group5`.`registrations`
+CREATE TRIGGER set_cancel_datetime
+BEFORE UPDATE ON registrations
 FOR EACH ROW
 BEGIN
-  DECLARE approved_count INT;
-  DECLARE max_capacity INT;
-
-  SELECT COUNT(*)
-  INTO approved_count
-  FROM `group5`.`registrations`
-  WHERE `event_id` = NEW.`event_id`
-    AND `status` = 'APPROVED';
-
-  SELECT `capacity`
-  INTO max_capacity
-  FROM `group5`.`events`
-  WHERE `event_id` = NEW.`event_id`;
-
-  IF NEW.`status` = 'APPROVED' AND approved_count >= max_capacity THEN
-    SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Event is already full';
+  IF NEW.status LIKE 'CANCELLED%' AND OLD.status NOT LIKE 'CANCELLED%' THEN
+    SET NEW.cancel_datetime = NOW();
   END IF;
 END$$
 
-#############################################################
-# PROCEDURE 1: Register a recruiter for an event
-#############################################################
-
-DELIMITER $$
-
-CREATE PROCEDURE `group5`.`register_recruiter_for_event`(
-    IN p_recruiter_id INT,
-    IN p_event_id INT
-)
+-- FIX: INSERT capacity check
+CREATE TRIGGER check_event_capacity_insert
+BEFORE INSERT ON registrations
+FOR EACH ROW
 BEGIN
-    INSERT INTO `group5`.`registrations` (
-        recruiter_id,
-        event_id,
-        status,
-        registration_datetime
-    )
-    VALUES (
-        p_recruiter_id,
-        p_event_id,
-        'PENDING',
-        NOW()
-    );
+  DECLARE cap INT;
+  DECLARE approved INT;
+
+  SELECT capacity INTO cap FROM events WHERE event_id = NEW.event_id;
+
+  SELECT COUNT(*) INTO approved
+  FROM registrations
+  WHERE event_id = NEW.event_id AND status = 'APPROVED';
+
+  IF NEW.status = 'APPROVED' AND approved >= cap THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Event is full';
+  END IF;
+END$$
+
+-- FIX: UPDATE capacity check (IMPORTANT)
+CREATE TRIGGER check_event_capacity_update
+BEFORE UPDATE ON registrations
+FOR EACH ROW
+BEGIN
+  DECLARE cap INT;
+  DECLARE approved INT;
+
+  IF NEW.status = 'APPROVED' AND OLD.status <> 'APPROVED' THEN
+
+    SELECT capacity INTO cap FROM events WHERE event_id = NEW.event_id;
+
+    SELECT COUNT(*) INTO approved
+    FROM registrations
+    WHERE event_id = NEW.event_id AND status = 'APPROVED';
+
+    IF approved >= cap THEN
+      SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Event is full (approval blocked)';
+    END IF;
+
+  END IF;
 END$$
 
 DELIMITER ;
 
-
-#############################################################
-# PROCEDURE 2: Approve a registration
-#############################################################
+##########################################################
+# Procedures
+##########################################################
 
 DELIMITER $$
 
-CREATE PROCEDURE `group5`.`approve_registration`(
-    IN p_registration_id INT
+CREATE PROCEDURE register_recruiter(
+  IN p_recruiter INT,
+  IN p_event INT
 )
 BEGIN
-    UPDATE `group5`.`registrations`
-    SET status = 'APPROVED'
-    WHERE registration_id = p_registration_id;
+  INSERT INTO registrations (recruiter_id, event_id)
+  VALUES (p_recruiter, p_event);
+END$$
+
+CREATE PROCEDURE approve_registration(IN p_id INT)
+BEGIN
+  UPDATE registrations
+  SET status = 'APPROVED'
+  WHERE registration_id = p_id;
+END$$
+
+CREATE PROCEDURE cancel_registration(
+  IN p_id INT,
+  IN p_user INT,
+  IN p_status VARCHAR(50)
+)
+BEGIN
+  UPDATE registrations
+  SET status = p_status,
+      cancelled_by = p_user
+  WHERE registration_id = p_id;
 END$$
 
 DELIMITER ;
 
-
-#############################################################
-# PROCEDURE 3: Cancel a registration
-#############################################################
-
-DELIMITER $$
-
-CREATE PROCEDURE `group5`.`cancel_registration`(
-    IN p_registration_id INT,
-    IN p_cancelled_by INT,
-    IN p_cancel_status VARCHAR(50)
-)
-BEGIN
-    UPDATE `group5`.`registrations`
-    SET
-        status = p_cancel_status,
-        cancelled_by = p_cancelled_by
-    WHERE registration_id = p_registration_id;
-END$$
-
-DELIMITER ;
-
-
-#############################################################
-# FUNCTION 1: Get number of approved registrations
-#############################################################
+##########################################################
+# Functions
+##########################################################
 
 DELIMITER $$
 
-CREATE FUNCTION `group5`.`get_approved_count`(
-    p_event_id INT
-)
+CREATE FUNCTION get_approved_count(pid INT)
 RETURNS INT
 DETERMINISTIC
 BEGIN
-    DECLARE approved_count INT;
+  DECLARE c INT;
 
-    SELECT COUNT(*)
-    INTO approved_count
-    FROM `group5`.`registrations`
-    WHERE event_id = p_event_id
-    AND status = 'APPROVED';
+  SELECT COUNT(*) INTO c
+  FROM registrations
+  WHERE event_id = pid AND status = 'APPROVED';
 
-    RETURN approved_count;
+  RETURN c;
 END$$
 
-DELIMITER ;
-
-
-#############################################################
-# FUNCTION 2: Get available spots for an event
-#############################################################
-
-DELIMITER $$
-
-CREATE FUNCTION `group5`.`get_available_spots`(
-    p_event_id INT
-)
+CREATE FUNCTION get_available_spots(pid INT)
 RETURNS INT
 DETERMINISTIC
 BEGIN
-    DECLARE event_capacity INT;
-    DECLARE approved_count INT;
-    DECLARE spots_left INT;
+  DECLARE cap INT;
+  DECLARE c INT;
 
-    SELECT capacity
-    INTO event_capacity
-    FROM `group5`.`events`
-    WHERE event_id = p_event_id;
+  SELECT capacity INTO cap FROM events WHERE event_id = pid;
 
-    SELECT COUNT(*)
-    INTO approved_count
-    FROM `group5`.`registrations`
-    WHERE event_id = p_event_id
-    AND status = 'APPROVED';
+  SELECT COUNT(*) INTO c
+  FROM registrations
+  WHERE event_id = pid AND status = 'APPROVED';
 
-    SET spots_left = event_capacity - approved_count;
-
-    RETURN spots_left;
+  RETURN cap - c;
 END$$
 
 DELIMITER ;
 
-
-#############################################################
-# CURSOR PROCEDURE: Show approved recruiters for one event
-#############################################################
+##########################################################
+# Cursor Procedure
+##########################################################
 
 DELIMITER $$
 
-CREATE PROCEDURE `group5`.`show_approved_recruiters_for_event`(
-    IN p_event_id INT
-)
+CREATE PROCEDURE approved_recruiters(IN p_event INT)
 BEGIN
-    DECLARE done INT DEFAULT 0;
-    DECLARE recruiter_name VARCHAR(150);
-    DECLARE recruiter_email VARCHAR(100);
+  DECLARE done INT DEFAULT 0;
+  DECLARE n VARCHAR(100);
+  DECLARE e VARCHAR(100);
 
-    DECLARE recruiter_cursor CURSOR FOR
-        SELECT
-            CONCAT(u.first_name, ' ', u.last_name),
-            u.email
-        FROM `group5`.`users` u
-        JOIN `group5`.`registrations` r
-        ON u.user_id = r.recruiter_id
-        WHERE r.event_id = p_event_id
-        AND r.status = 'APPROVED';
+  DECLARE cur CURSOR FOR
+    SELECT CONCAT(first_name,' ',last_name), email
+    FROM users u
+    JOIN registrations r ON u.user_id = r.recruiter_id
+    WHERE r.event_id = p_event AND r.status = 'APPROVED';
 
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
-    OPEN recruiter_cursor;
+  OPEN cur;
 
-    read_loop: LOOP
-        FETCH recruiter_cursor INTO recruiter_name, recruiter_email;
+  loop1: LOOP
+    FETCH cur INTO n, e;
 
-        IF done = 1 THEN
-            LEAVE read_loop;
-        END IF;
+    IF done THEN
+      LEAVE loop1;
+    END IF;
 
-        SELECT
-            recruiter_name AS approved_recruiter,
-            recruiter_email AS email;
-    END LOOP;
+    SELECT n AS name, e AS email;
+  END LOOP;
 
-    CLOSE recruiter_cursor;
+  CLOSE cur;
 END$$
 
 DELIMITER ;
