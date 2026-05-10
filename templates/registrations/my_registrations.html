@@ -1,30 +1,73 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>My Registrations</title>
+
+    <link rel="stylesheet" href="{% static 'home.css' %}">
 </head>
+
 <body>
 
-<h1>My Event Registrations</h1>
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">Recruiter System</div>
 
+    <ul class="nav-links">
+        <li><a href="/home/">Events</a></li>
+        <li><a href="/my_registrations/">Registrations</a></li>
+        <li><a href="/profile/">Profile</a></li>
+    </ul>
+</nav>
 
-<table border="1">
-    <tr>
-        <th>Registration ID</th>
-        <th>Event Name</th>
-        <th>Status</th>
-        <th>Registered On</th>
-    </tr>
+<!-- PAGE TITLE -->
+<div class="page-title">
+    <h1>My Registrations</h1>
+</div>
 
-    {% for r in registrations %}
-    <tr>
-        <td>{{ r.registration_id }}</td>
-        <td>{{ r.event_name }}</td>
-        <td>{{ r.status }}</td>
-        <td>{{ r.registration_datetime }}</td>
-    </tr>
-    {% endfor %}
-</table>
+<!-- CONTENT -->
+<section class="events-section">
+
+    {% if registrations %}
+
+        <div class="event-grid">
+
+            {% for r in registrations %}
+            <div class="event-card">
+
+                <div class="event-header">
+                    <h2>{{ r.event_name }}</h2>
+                </div>
+
+                <div class="event-body">
+                    <p><strong>Status:</strong> {{ r.status }}</p>
+                    <p><strong>Registered:</strong> {{ r.registration_datetime }}</p>
+                </div>
+
+                <div class="event-footer">
+                    {% if r.status != "CANCELLED_NO_REFUND" %}
+                        <a href="/cancel/{{ r.registration_id }}/" class="btn edit">
+                            Cancel
+                        </a>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+            <h3>No registrations yet</h3>
+            <p>Go register for an event to see them here.</p>
+        </div>
+
+    {% endif %}
+
+</section>
 
 </body>
 </html>
