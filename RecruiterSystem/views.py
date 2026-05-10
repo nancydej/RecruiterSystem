@@ -81,7 +81,6 @@ def user_profile(request):
 
     return render(request, "users/user_profile.html", {"user": user})
 
-
 def admin_profile(request):
     user_id = request.session.get("user_id")
 
