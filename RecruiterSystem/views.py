@@ -114,7 +114,7 @@ def add_user(request):
 
 
 def edit_user(request, user_id):
-    user = User.objects.filter(user_id=user_id).first()
+    user = get_object_or_404(User, user_id=user_id)
 
     if request.method == "POST":
         user.username = request.POST.get("username")
@@ -188,8 +188,8 @@ def register_event(request, event_id):
     if not user_id:
         return redirect("login")
 
-    user = User.objects.get(pk=user_id)
-    event = Event.objects.get(pk=event_id)
+    user = get_object_or_404(User, pk=user_id)
+    event = get_object_or_404(Event, pk=event_id)
 
     # prevent duplicate registration
     if Registration.objects.filter(recruiter=user, event=event).exists():
