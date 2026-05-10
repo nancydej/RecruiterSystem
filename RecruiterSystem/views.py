@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from .models import User, Role, Event, Registration
 from django.db import connection
@@ -63,109 +63,122 @@ class Signup(View):
         return redirect("login")
 
 def user_profile(request):
-    user = {}
+    user_id = request.session.get("user_id")
 
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM users LIMIT 1")
-        columns = [col[0] for col in cursor.description]
-        row = cursor.fetchone()
+    if not user_id:
+        return redirect("login")
 
-        if row:
-            user = dict(zip(columns, row))
+    try:
+        user = User.objects.get(user_id=user_id)
+    except User.DoesNotExist:
+        return redirect("login")
 
     return render(request, "user_profile.html", {"user": user})
 
 
 def admin_profile(request):
-    admin = {}
+    user_id = request.session.get("user_id")
 
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM users WHERE role = 'Admin' LIMIT 1")
-        columns = [col[0] for col in cursor.description]
-        row = cursor.fetchone()
+    if not user_id:
+        return redirect("login")
 
-        if row:
-            admin = dict(zip(columns, row))
+    admin = User.objects.filter(
+        user_id=user_id,
+        role=Role.ADMIN
+    ).first()
+
+    if not admin:
+        return redirect("login")
 
     return render(request, "admin_profile.html", {"admin": admin})
 
 
 def manage_users(request):
-    users = []
-
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM users")
-        columns = [col[0] for col in cursor.description]
-
-        for row in cursor.fetchall():
-            users.append(dict(zip(columns, row)))
-
+    users = User.objects.all()
     return render(request, "manage_users.html", {"users": users})
 
 
 def add_user(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        phone_number = request.POST.get("phone_number")
-        role = request.POST.get("role")
-
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO users 
-                (username, first_name, last_name, email, password, phone_number, role)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, [username, first_name, last_name, email, password, phone_number, role])
-
+        User.objects.create(
+            username=request.POST.get("username"),
+            first_name=request.POST.get("first_name"),
+            last_name=request.POST.get("last_name"),
+            email=request.POST.get("email"),
+            password=request.POST.get("password"),
+            phone_number=request.POST.get("phone_number"),
+            role=request.POST.get("role"),
+        )
         return redirect("manage_users")
-
     return render(request, "add_user.html")
 
 
 def edit_user(request, user_id):
+    user = get_object_or_404(User, user_id=user_id)
+
     if request.method == "POST":
-        username = request.POST.get("username")
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        email = request.POST.get("email")
-        phone_number = request.POST.get("phone_number")
-        role = request.POST.get("role")
-
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                UPDATE users
-                SET username = %s,
-                    first_name = %s,
-                    last_name = %s,
-                    email = %s,
-                    phone_number = %s,
-                    role = %s
-                WHERE user_id = %s
-            """, [username, first_name, last_name, email, phone_number, role, user_id])
-
+        user.username = request.POST.get("username")
+        user.first_name = request.POST.get("first_name")
+        user.last_name = request.POST.get("last_name")
+        user.email = request.POST.get("email")
+        user.phone_number = request.POST.get("phone_number")
+        user.role = request.POST.get("role")
+        user.save()
         return redirect("manage_users")
-
-    user = {}
-
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM users WHERE user_id = %s", [user_id])
-        columns = [col[0] for col in cursor.description]
-        row = cursor.fetchone()
-
-        if row:
-            user = dict(zip(columns, row))
 
     return render(request, "edit_user.html", {"user": user})
 
-
 def delete_user(request, user_id):
-    with connection.cursor() as cursor:
-        cursor.execute("DELETE FROM users WHERE user_id = %s", [user_id])
-
+    user = get_object_or_404(User, user_id=user_id)
+    user.delete()
     return redirect("manage_users")
+
+
+#MANAGING EVENTS- CRUD
+def manage_events(request):
+    events = Event.objects.select_related('created_by').all()
+    return render(request, "manage_events.html", {"events": events})
+
+
+def add_event(request):
+    role = request.session.get("role")
+    if role not in ["Admin", "Event Coordinator"]:
+        return redirect("manage_events")
+
+    if request.method == "POST":
+        Event.objects.create(
+            created_by_id=request.session.get("user_id"),
+            event_name=request.POST.get("event_name"),
+            description=request.POST.get("description"),
+            city=request.POST.get("city"),
+            state=request.POST.get("state"),
+            event_datetime=request.POST.get("event_datetime"),
+            capacity=request.POST.get("capacity"),
+        )
+        return redirect("manage_events")
+
+    return render(request, "add_event.html")
+
+
+def edit_event(request, event_id):
+    role = request.session.get("role")
+    if role not in ["Admin", "Event Coordinator"]:
+        return redirect("manage_events")
+
+    event = get_object_or_404(Event, pk=event_id)
+
+    if request.method == "POST":
+        event.event_name = request.POST.get("event_name")
+        event.description = request.POST.get("description")
+        event.city = request.POST.get("city")
+        event.state = request.POST.get("state")
+        event.event_datetime = request.POST.get("event_datetime")
+        event.capacity = request.POST.get("capacity")
+        event.save()
+        return redirect("manage_events")
+
+    return render(request, "edit_event.html", {"event": event})
+
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                       REGISTRATIONS
@@ -175,8 +188,8 @@ def register_event(request, event_id):
     if not user_id:
         return redirect("login")
 
-    user = User.objects.get(pk=user_id)
-    event = Event.objects.get(pk=event_id)
+    user = get_object_or_404(User, pk=user_id)
+    event = get_object_or_404(Event, pk=event_id)
 
     # prevent duplicate registration
     if Registration.objects.filter(recruiter=user, event=event).exists():
@@ -246,49 +259,3 @@ def my_registrations(request):
     return render(request, "my_registrations.html", {
         "registrations": registrations
     })
-
-
-#MANAGING EVENTS- CRUD
-def manage_events(request):
-    events = Event.objects.select_related('created_by').all()
-    return render(request, "manage_events.html", {"events": events})
-
-
-def add_event(request):
-    role = request.session.get("role")
-    if role not in ["Admin", "Event Coordinator"]:
-        return redirect("manage_events")
-
-    if request.method == "POST":
-        Event.objects.create(
-            created_by_id=request.session.get("user_id"),
-            event_name=request.POST.get("event_name"),
-            description=request.POST.get("description"),
-            city=request.POST.get("city"),
-            state=request.POST.get("state"),
-            event_datetime=request.POST.get("event_datetime"),
-            capacity=request.POST.get("capacity"),
-        )
-        return redirect("manage_events")
-
-    return render(request, "add_event.html")
-
-
-def edit_event(request, event_id):
-    role = request.session.get("role")
-    if role not in ["Admin", "Event Coordinator"]:
-        return redirect("manage_events")
-
-    event = Event.objects.get(pk=event_id)
-
-    if request.method == "POST":
-        event.event_name = request.POST.get("event_name")
-        event.description = request.POST.get("description")
-        event.city = request.POST.get("city")
-        event.state = request.POST.get("state")
-        event.event_datetime = request.POST.get("event_datetime")
-        event.capacity = request.POST.get("capacity")
-        event.save()
-        return redirect("manage_events")
-
-    return render(request, "edit_event.html", {"event": event})
