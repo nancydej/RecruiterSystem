@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home | Events</title>
+
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">Recruiter System</div>
+
+    <ul class="nav-links">
+        <li><a href="/home/">Events</a></li>
+        <li><a href="/my-registrations/">Registrations</a></li>
+        <li><a href="/profile/">Profile</a></li>
+    </ul>
+</nav>
+
+<!-- PAGE TITLE -->
+<div class="page-title">
+    <h1>Upcoming Events</h1>
+    <p>Browse and register for recruitment events</p>
+</div>
+
+<!-- EVENT CARDS -->
+<div class="event-container">
+
+    {% for event in events %}
+    <div class="event-card">
+
+        <!-- Banner -->
+        <div class="event-banner">
+            <h2>{{ event.event_name }}</h2>
+        </div>
+
+        <!-- Details -->
+        <div class="event-info">
+            <p><strong>Location:</strong> {{ event.city }}, {{ event.state }}</p>
+            <p><strong>Date:</strong> {{ event.event_datetime }}</p>
+            <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+            <p class="desc">{{ event.description }}</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="event-actions">
+            <a href="/register/{{ event.event_id }}/" class="btn register">Register</a>
+            <a href="/edit-event/{{ event.event_id }}/" class="btn edit">View</a>
+        </div>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+</body>
+</html>

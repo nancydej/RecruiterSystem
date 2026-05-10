@@ -1,0 +1,101 @@
+/* Background */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #EEE8DC;
+}
+
+/* NAVBAR */
+.navbar {
+    background: #000;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 30px;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+}
+
+.nav-links a:hover {
+    color: #A39CFC;
+}
+
+/* PAGE TITLE */
+.page-title {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.page-title h1 {
+    color: #5545FE;
+}
+
+/* EVENT GRID */
+.event-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* CARD */
+.event-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* BANNER */
+.event-banner {
+    background: #BABAD6;
+    padding: 20px;
+    text-align: center;
+}
+
+.event-banner h2 {
+    margin: 0;
+    color: #000;
+}
+
+/* INFO */
+.event-info {
+    padding: 15px;
+}
+
+.event-info .desc {
+    color: #555;
+}
+
+/* BUTTONS */
+.event-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+}
+
+.btn {
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.register {
+    background: #5545FE;
+    color: white;
+}
+
+.edit {
+    background: #A39CFC;
+    color: black;
+}
