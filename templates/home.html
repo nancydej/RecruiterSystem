@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Home | Events</title>
 
+    <link rel="stylesheet" href="{% static 'base.css' %}">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
 </head>
 
@@ -29,14 +30,14 @@
 </div>
 
 
-<!-- EVENT CARDS -->
-<div class="event-container">
+<!-- EVENTS GRID -->
+<div class="grid">
 
     {% for event in events %}
-    <div class="event-card">
+    <div class="card">
 
         <!-- Banner -->
-        <div class="event-banner">
+        <div class="card-banner">
             <h2>{{ event.event_name }}</h2>
         </div>
 
@@ -50,8 +51,21 @@
 
         <!-- Actions -->
         <div class="event-actions">
-            <a href="/register/{{ event.event_id }}/" class="btn register">Register</a>
-            <a href="/edit-event/{{ event.event_id }}/" class="btn edit">View</a>
+
+            {% if user.is_authenticated %}
+                <a href="/register/{{ event.event_id }}/" class="btn register">
+                    Register
+                </a>
+            {% else %}
+                <a href="/login/" class="btn register">
+                    Login to Register
+                </a>
+            {% endif %}
+
+            <a href="/event/{{ event.event_id }}/" class="btn edit">
+                View
+            </a>
+
         </div>
 
     </div>

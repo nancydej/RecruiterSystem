@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>My Registrations</title>
 
+    <link rel="stylesheet" href="{% static 'base.css' %}">
     <link rel="stylesheet" href="{% static 'registrations.css' %}">
 </head>
 
@@ -16,7 +17,7 @@
 
     <ul class="nav-links">
         <li><a href="/home/">Events</a></li>
-        <li><a href="/my_registrations/">Registrations</a></li>
+        <li><a href="/my-registrations/">Registrations</a></li>
         <li><a href="/profile/">Profile</a></li>
     </ul>
 </nav>
@@ -31,16 +32,19 @@
 
     {% if registrations %}
 
-        <div class="registration-container">
+        <div class="grid">
 
             {% for r in registrations %}
-            <div class="registration-card">
+            <div class="card">
 
-                <div class="registration-banner">
+                <!-- Banner -->
+                <div class="card-banner">
                     <h2>{{ r.event_name }}</h2>
                 </div>
 
+                <!-- Info -->
                 <div class="registration-info">
+
                     <p>
                         <strong>Status:</strong>
 
@@ -54,14 +58,18 @@
                     </p>
 
                     <p><strong>Registered:</strong> {{ r.registration_datetime }}</p>
+
                 </div>
 
+                <!-- Actions -->
                 <div class="registration-actions">
+
                     {% if r.status != "CANCELLED_NO_REFUND" %}
                         <a href="/cancel/{{ r.registration_id }}/" class="btn cancel">
                             Cancel
                         </a>
                     {% endif %}
+
                 </div>
 
             </div>
