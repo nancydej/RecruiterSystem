@@ -65,7 +65,11 @@ class Signup(View):
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def home(request):
     user_id = request.session.get("user_id")
-    events = Event.objects.all()
+
+    try:
+        events = Event.objects.all()
+    except Exception:
+        events = []  # fallback if DB fails
 
     return render(request, "home.html", {
         "events": events,
