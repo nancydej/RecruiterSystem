@@ -1,17 +1,12 @@
 {% load static %}
-    <link rel="stylesheet" href="{% static 'home.css' %}">
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Home | Events</title>
 
-<<<<<<< HEAD
     <link rel="stylesheet" href="{% static 'base.css' %}">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
-=======
->>>>>>> 0199829731ba539ab63314f6052e5c84a7c8f097
 </head>
 
 <body>
@@ -21,9 +16,9 @@
     <div class="logo">Recruiter System</div>
 
     <ul class="nav-links">
-    <li><a href="{% url 'home' %}">Events</a></li>
-    <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
-    <li><a href="{% url 'user_profile' %}">Profile</a></li>
+        <li><a href="{% url 'home' %}">Events</a></li>
+        <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
+        <li><a href="{% url 'user_profile' %}">Profile</a></li>
     </ul>
 </nav>
 
@@ -37,78 +32,59 @@
 <section class="events-section">
 
     {% if events %}
-        <div class="event-grid">
 
-<<<<<<< HEAD
-<!-- EVENTS GRID -->
-<div class="grid">
+        <div class="grid">
 
-    {% for event in events %}
-    <div class="card">
-
-        <!-- Banner -->
-        <div class="card-banner">
-            <h2>{{ event.event_name }}</h2>
-=======
             {% for event in events %}
-            <div class="event-card">
+            <div class="card">
 
-                <div class="event-header">
+                <!-- Banner -->
+                <div class="card-banner">
                     <h2>{{ event.event_name }}</h2>
-                    <span class="capacity">Capacity: {{ event.capacity }}</span>
                 </div>
 
-                <div class="event-body">
-                    <p><strong> Location:</strong> {{ event.city }}, {{ event.state }}</p>
-                    <p><strong> Date:</strong> {{ event.event_date }}</p>
-                    <p class="description">{{ event.description }}</p>
+                <!-- Info -->
+                <div class="event-info">
+                    <p><strong>Location:</strong> {{ event.city }}, {{ event.state }}</p>
+                    <p><strong>Date:</strong> {{ event.event_datetime }}</p>
+                    <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+                    <p class="desc">{{ event.description }}</p>
                 </div>
 
-                <div class="event-footer">
-                    <a href="/register/{{ event.event_id }}/" class="btn register">Register</a>
-                    <a href="/event/{{ event.event_id }}/" class="btn view">View Details</a>
+                <!-- Actions -->
+                <div class="event-actions">
+
+                    {% if user.is_authenticated %}
+                        <a href="/register/{{ event.event_id }}/" class="btn register">
+                            Register
+                        </a>
+                    {% else %}
+                        <a href="/login/" class="btn register">
+                            Login to Register
+                        </a>
+                    {% endif %}
+
+                    <a href="/event/{{ event.event_id }}/" class="btn view">
+                        View Details
+                    </a>
+
                 </div>
 
             </div>
             {% endfor %}
 
->>>>>>> 0199829731ba539ab63314f6052e5c84a7c8f097
         </div>
 
     {% else %}
+
         <div class="empty-state">
             <h3>No events available right now</h3>
             <p>Check back later for new recruitment opportunities.</p>
         </div>
+
     {% endif %}
 
-<<<<<<< HEAD
-        <!-- Actions -->
-        <div class="event-actions">
-
-            {% if user.is_authenticated %}
-                <a href="/register/{{ event.event_id }}/" class="btn register">
-                    Register
-                </a>
-            {% else %}
-                <a href="/login/" class="btn register">
-                    Login to Register
-                </a>
-            {% endif %}
-
-            <a href="/event/{{ event.event_id }}/" class="btn edit">
-                View
-            </a>
-
-        </div>
-
-    </div>
-    {% endfor %}
-
-</div>
-=======
 </section>
->>>>>>> 0199829731ba539ab63314f6052e5c84a7c8f097
 
 </body>
 </html>
