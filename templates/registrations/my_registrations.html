@@ -5,69 +5,86 @@
     <meta charset="UTF-8">
     <title>My Registrations</title>
 
+    <link rel="stylesheet" href="{% static 'base.css' %}">
     <link rel="stylesheet" href="{% static 'registrations.css' %}">
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar">
     <div class="logo">Recruiter System</div>
 
     <ul class="nav-links">
         <li><a href="/home/">Events</a></li>
-        <li><a href="/my_registrations/">Registrations</a></li>
+        <li><a href="/my-registrations/">Registrations</a></li>
         <li><a href="/profile/">Profile</a></li>
     </ul>
 </nav>
 
-<!-- PAGE TITLE -->
-<div class="page-title">
-    <h1>My Registrations</h1>
-</div>
+<div class="page-container">
 
-<!-- CONTENT -->
-<section class="events-section">
+    <div class="page-title">
+        <h1>My Registrations</h1>
+    </div>
 
-    {% if registrations %}
+    <section>
 
-        <div class="event-grid">
+        {% if registrations %}
 
-            {% for r in registrations %}
-            <div class="event-card">
+            <div class="grid">
 
-                <div class="event-header">
-                    <h2>{{ r.event_name }}</h2>
+                {% for r in registrations %}
+                <div class="card">
+
+                    <div class="card-banner">
+                        <h2>{{ r.event_name }}</h2>
+                    </div>
+
+                    <div class="registration-info">
+
+                        <p>
+                            <strong>Status:</strong>
+
+                            {% if r.status == "APPROVED" %}
+                                <span class="status approved">Approved</span>
+                            {% elif r.status == "PENDING" %}
+                                <span class="status pending">Pending</span>
+                            {% else %}
+                                <span class="status cancelled">{{ r.status }}</span>
+                            {% endif %}
+                        </p>
+
+                        <p><strong>Registered:</strong> {{ r.registration_datetime }}</p>
+
+                    </div>
+
+                    <div class="registration-actions">
+
+                        {% if r.status != "CANCELLED_NO_REFUND" %}
+                            <a href="/cancel/{{ r.registration_id }}/" class="btn cancel">
+                                Cancel
+                            </a>
+                        {% endif %}
+
+                    </div>
+
                 </div>
-
-                <div class="event-body">
-                    <p><strong>Status:</strong> {{ r.status }}</p>
-                    <p><strong>Registered:</strong> {{ r.registration_datetime }}</p>
-                </div>
-
-                <div class="event-footer">
-                    {% if r.status != "CANCELLED_NO_REFUND" %}
-                        <a href="/cancel/{{ r.registration_id }}/" class="btn edit">
-                            Cancel
-                        </a>
-                    {% endif %}
-                </div>
+                {% endfor %}
 
             </div>
-            {% endfor %}
 
-        </div>
+        {% else %}
 
-    {% else %}
+            <div class="empty-state">
+                <h3>No registrations yet</h3>
+                <p>Go register for an event to see them here.</p>
+            </div>
 
-        <div class="empty-state">
-            <h3>No registrations yet</h3>
-            <p>Go register for an event to see them here.</p>
-        </div>
+        {% endif %}
 
-    {% endif %}
+    </section>
 
-</section>
+</div>
 
 </body>
 </html>
