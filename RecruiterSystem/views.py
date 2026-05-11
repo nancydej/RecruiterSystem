@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from .models import User, Role, Event, Registration
 from django.db import connection
+from django.contrib.auth import authenticate, login
 from django.utils import timezone
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -9,22 +10,26 @@ from django.utils import timezone
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Login(View):
     def get(self, request):
-        return render(request, "auth/login.html")
+        return render(request, "login.html")
 
     def post(self, request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        user = User.objects.filter(email=email, password=password).first()
+        user = authenticate(request, email=email, password=password)
 
-        if not user:
-            return render(request, "auth/login.html", {"error": "Invalid email or password"})
+        if user is None:
+            return render(request, "login.html", {"error": "Invalid email or password"})
 
-        request.session["user_id"] = user.user_id
-        request.session["role"] = user.role
+        login(request, user)
 
-        # UPDATED FLOW: send everyone to HOME first
-        return redirect("home")
+        #redirect by role
+        if user.role == Role.ADMIN:
+            return redirect("admin_profile")
+        elif user.role == Role.EVENT_COORDINATOR:
+            return redirect("event_coordinator_profile")
+        else:
+            return redirect("user_profile")
 
 class Logout(View):
     def get(self, request):
@@ -33,10 +38,9 @@ class Logout(View):
 
 class Signup(View):
     def get(self, request):
-        return render(request, "auth/signup.html")
+        return render(request, "signup.html")
 
     def post(self, request):
-        username = request.POST.get("username")
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name")
         email = request.POST.get("email")
@@ -46,17 +50,21 @@ class Signup(View):
 
         #prevent duplicate accounts using email
         if User.objects.filter(email=email).exists():
-            return render(request, "auth/signup.html", {"error": "Email already exists"})
+            return render(request, "signup.html", {"error": "Email already exists"})
+
+        if role not in dict(Role.choices):
+            return render(request, "signup.html", {"error": "Invalid role"})
 
         #create user
-        User.objects.create(
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                password=password,
-                phone_number=phone_number,
-                role=role)
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            role=role,
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number
+        )
 
         return redirect("login")
 

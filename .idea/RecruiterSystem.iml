@@ -14,14 +14,9 @@
   </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/venv/Lib/site-packages" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
     </content>
-<<<<<<< HEAD
-    <orderEntry type="jdk" jdkName="Python 3.14 (RecruiterSystem) (2)" jdkType="Python SDK" />
-=======
     <orderEntry type="jdk" jdkName="Python 3.14 (RecruiterSystem)" jdkType="Python SDK" />
->>>>>>> 3f74069e76d6f549e2242875a7bea5d681d0d4f8
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TemplatesService">

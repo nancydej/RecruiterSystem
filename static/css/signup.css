@@ -1,0 +1,28 @@
+.auth-right h1 {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 30px;
+}
+
+.row {
+    display: flex;
+    gap: 15px;
+}
+
+.switch {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.title {
+    font-size: 48px;
+    color: darkblue;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 20px;
+    color: darkblue;
+    margin-bottom: 50px;
+}
