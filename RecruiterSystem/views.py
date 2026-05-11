@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 from .models import User, Role
 from django.db import connection
+from django.contrib.auth import authenticate, login
 
 class Login(View):
     def get(self, request):
@@ -11,13 +12,12 @@ class Login(View):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        user = User.objects.filter(email=email, password=password).first()
+        user = authenticate(request, email=email, password=password)
 
-        if not user:
+        if user is None:
             return render(request, "login.html", {"error": "Invalid email or password"})
 
-        request.session["user_id"] = user.user_id
-        request.session["role"] = user.role
+        login(request, user)
 
         #redirect by role
         if user.role == Role.ADMIN:
@@ -37,7 +37,6 @@ class Signup(View):
         return render(request, "signup.html")
 
     def post(self, request):
-        username = request.POST.get("username")
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name")
         email = request.POST.get("email")
@@ -49,15 +48,19 @@ class Signup(View):
         if User.objects.filter(email=email).exists():
             return render(request, "signup.html", {"error": "Email already exists"})
 
+        if role not in dict(Role.choices):
+            return render(request, "signup.html", {"error": "Invalid role"})
+
         #create user
-        User.objects.create(
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                password=password,
-                phone_number=phone_number,
-                role=role)
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            role=role,
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number
+        )
 
         return redirect("login")
 

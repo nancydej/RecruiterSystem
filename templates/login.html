@@ -1,10 +1,53 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Recruiter Event Management System</title>
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'css/auth-base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    <H1>Recruiter Event Management System</H1>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-left">
+                <div class="left-content">
+                    <h2>EVENT</h2>
+                    <h2>RECRUITER</h2>
+                </div>
+            </div>
+
+            <div class="auth-right">
+                <h1 class="title">WELCOME BACK</h1>
+                <p class="subtitle">Enter your credentials to access your account</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    {% if error %}
+                	    <p class="error">{{ error }}</p>
+                    {% endif %}
+
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+
+                    <div class="password-row">
+                        <label>Password</label>
+                        <a href="#" class="forgot">Forgot password</a>
+                    </div>
+
+                    <input type="password" name="password" required>
+
+                    <p class="signup-text">
+                        Don't have an account?
+                        <a href="{% url 'signup' %}">Sign up</a>
+                    </p>
+
+                    <button type="submit" class="login-btn">LOG IN</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
