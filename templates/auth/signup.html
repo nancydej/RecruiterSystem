@@ -1,10 +1,76 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{% static 'css/auth-base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-left">
+                <div class="left-content">
+                    <h2>EVENT</h2>
+                    <h2>RECRUITER</h2>
+                </div>
+            </div>
 
+            <div class="auth-right">
+                <h1>Create Account</h1>
+                {% if error %}
+                    <p class="error">{{ error }}</p>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="field">
+                            <label>First name</label>
+                            <input type="text" name="first_name" required>
+                        </div>
+
+                        <div class="field">
+                            <label>Last name</label>
+                            <input type="text" name="last_name" required>
+                        </div>
+                    </div>
+
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+
+                    <label>Password</label>
+                    <input type="password" name="password" required>
+
+                    <div class="row">
+                        <div class="field">
+                            <label>Phone number</label>
+                            <input type="text" name="phone_number" required>
+                        </div>
+
+                        <div class="field">
+                            <label>Role</label>
+                            <select name="role" required>
+                                <option value="">Select role</option>
+                                <option value="Recruiter">Recruiter</option>
+                                <option value="Event Coordinator">Event Coordinator</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit">SIGN UP</button>
+                </form>
+
+                <p class="switch">
+                    Already have an account?
+                    <a href="{% url 'login' %}">Sign In</a>
+                </p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

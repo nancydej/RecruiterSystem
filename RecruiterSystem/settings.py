@@ -83,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'group5',
         'USER': 'root',
-        'PASSWORD': 'ADb3545!2026!!',
+        'PASSWORD': 'Admin123',
         'HOST': 'localhost',
         'PORT': '3306', # Default MySQL port
     }
@@ -125,6 +125,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+AUTH_USER_MODEL = 'RecruiterSystem.User'
