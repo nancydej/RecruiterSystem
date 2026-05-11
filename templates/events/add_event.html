@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Event</title>
+<style>
+    /* =========================
+       BASE
+    ========================= */
+
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f5f6fa;
+        color: #333;
+    }
+
+    /* =========================
+       NAVBAR (GLOBAL STYLE)
+    ========================= */
+
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #5545FE;
+        padding: 14px 24px;
+        color: white;
+    }
+
+    .logo {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .nav-links {
+        list-style: none;
+        display: flex;
+        gap: 16px;
+    }
+
+    .nav-links a {
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .nav-links a:hover {
+        opacity: 0.8;
+    }
+
+    /* =========================
+       PAGE LAYOUT
+    ========================= */
+
+    .page-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    h1 {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    /* =========================
+       FORM CARD
+    ========================= */
+
+    form {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 4px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    input,
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    textarea {
+        min-height: 90px;
+        resize: vertical;
+    }
+
+    /* =========================
+       BUTTONS
+    ========================= */
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .btn {
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #5545FE;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.85;
+    }
+
+    .btn-secondary {
+        background: #e5e7eb;
+        color: #111;
+    }
+
+    .btn-secondary:hover {
+        opacity: 0.85;
+    }
+</style>
+</head>
+<body>
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">Recruiter System</div>
+
+    <ul class="nav-links">
+        <li><a href="{% url 'home' %}">Events</a></li>
+        <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
+        <li><a href="{% url 'user_profile' %}">Profile</a></li>
+    </ul>
+</nav>
+<div class="page-container">
+    <h1>Add Event</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Event Name</label>
+            <label>
+                <input type="text" name="event_name" required>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <label>
+                <textarea name="description"></textarea>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>City</label>
+            <label>
+                <input type="text" name="city" required>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>State</label>
+            <label>
+                <input type="text" name="state" required>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Date & Time</label>
+            <label>
+                <input type="datetime-local" name="event_datetime" required>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Capacity</label>
+            <label>
+                <input type="number" name="capacity" min="1" required>
+            </label>
+        </div>
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">Create Event</button>
+            <a href="{% url 'manage_events' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

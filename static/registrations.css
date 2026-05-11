@@ -1,0 +1,128 @@
+/* =========================
+   PAGE LAYOUT
+========================= */
+
+.page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* =========================
+   GRID LAYOUT
+========================= */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    align-items: stretch;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+/* =========================
+   CARD HEADER / BANNER
+========================= */
+
+.card-banner {
+    background: #2f3b52;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.card-banner h2 {
+    font-size: 16px;
+}
+
+/* =========================
+   INFO SECTION
+========================= */
+
+.registration-info {
+    padding: 10px 0;
+}
+
+.registration-info p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+/* =========================
+   STATUS BADGES
+========================= */
+
+.status {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.status.approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status.cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* =========================
+   ACTION AREA
+========================= */
+
+.registration-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Cancel button */
+.btn.cancel {
+    background: #A39CFC;
+    color: black;
+}
+
+.btn.cancel:hover {
+    opacity: 0.85;
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    background: white;
+    border-radius: 12px;
+    margin: 20px;
+}

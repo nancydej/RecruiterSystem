@@ -26,10 +26,18 @@ urlpatterns = [
     path('signup/', Signup.as_view(), name='signup'),
     path('logout/', Logout.as_view(), name='logout'),
 
+    path('home/', views.home, name='home'),
     path('profile/', views.user_profile, name='user_profile'),
     path('admin-profile/', views.admin_profile, name='admin_profile'),
     path('manage-users/', views.manage_users, name='manage_users'),
     path('add-user/', views.add_user, name='add_user'),
     path('edit-user/<int:user_id>/', views.edit_user, name='edit_user'),
     path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('register/<int:event_id>/', views.register_event, name='register_event'),
+    path('cancel/<int:registration_id>/', views.cancel_registration, name='cancel_registration'),
+    path('my-registrations/', views.my_registrations, name='my_registrations'),
+    path('events/', views.manage_events, name='manage_events'),
+    path('events/add/', views.add_event, name='add_event'),
+    path('events/edit/<int:event_id>/', views.edit_event, name='edit_event'),
+
 ]
