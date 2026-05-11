@@ -5,12 +5,203 @@
     <meta charset="UTF-8">
     <title>My Registrations</title>
 
-    <link rel="stylesheet" href="{% static 'base.css' %}">
-    <link rel="stylesheet" href="{% static 'registrations.css' %}">
+    <style>
+        /* =========================
+           BASE PAGE STYLING
+        ========================= */
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        /* =========================
+           NAVBAR
+        ========================= */
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #5545FE;
+            padding: 14px 24px;
+            color: white;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 16px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* =========================
+           PAGE TITLE
+        ========================= */
+
+        .page-title {
+            text-align: center;
+            margin: 30px 0 10px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+        }
+
+        /* =========================
+           PAGE CONTAINER
+        ========================= */
+
+        .page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* =========================
+           GRID
+        ========================= */
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* =========================
+           CARD
+        ========================= */
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        /* =========================
+           BANNER
+        ========================= */
+
+        .card-banner {
+            background: #5545FE;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .card-banner h2 {
+            font-size: 16px;
+            margin: 0;
+        }
+
+        /* =========================
+           INFO SECTION
+        ========================= */
+
+        .registration-info p {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        /* =========================
+           STATUS BADGES
+        ========================= */
+
+        .status {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .status.approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* =========================
+           ACTIONS
+        ========================= */
+
+        .registration-actions {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.2s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        .btn.cancel {
+            background: #A39CFC;
+            color: black;
+        }
+
+        /* =========================
+           EMPTY STATE
+        ========================= */
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            margin-top: 20px;
+            color: #666;
+        }
+
+    </style>
 </head>
 
 <body>
 
+<!-- NAVBAR -->
 <nav class="navbar">
     <div class="logo">Recruiter System</div>
 
@@ -23,66 +214,64 @@
 
 <div class="page-container">
 
+    <!-- TITLE -->
     <div class="page-title">
         <h1>My Registrations</h1>
     </div>
 
-    <section>
+    <!-- CONTENT -->
+    {% if registrations %}
 
-        {% if registrations %}
+        <div class="grid">
 
-            <div class="grid">
+            {% for r in registrations %}
+            <div class="card">
 
-                {% for r in registrations %}
-                <div class="card">
+                <div class="card-banner">
+                    <h2>{{ r.event_name }}</h2>
+                </div>
 
-                    <div class="card-banner">
-                        <h2>{{ r.event_name }}</h2>
-                    </div>
+                <div class="registration-info">
 
-                    <div class="registration-info">
+                    <p>
+                        <strong>Status:</strong>
 
-                        <p>
-                            <strong>Status:</strong>
-
-                            {% if r.status == "APPROVED" %}
-                                <span class="status approved">Approved</span>
-                            {% elif r.status == "PENDING" %}
-                                <span class="status pending">Pending</span>
-                            {% else %}
-                                <span class="status cancelled">{{ r.status }}</span>
-                            {% endif %}
-                        </p>
-
-                        <p><strong>Registered:</strong> {{ r.registration_datetime }}</p>
-
-                    </div>
-
-                    <div class="registration-actions">
-
-                        {% if r.status != "CANCELLED_NO_REFUND" %}
-                            <a href="/cancel/{{ r.registration_id }}/" class="btn cancel">
-                                Cancel
-                            </a>
+                        {% if r.status == "APPROVED" %}
+                            <span class="status approved">Approved</span>
+                        {% elif r.status == "PENDING" %}
+                            <span class="status pending">Pending</span>
+                        {% else %}
+                            <span class="status cancelled">{{ r.status }}</span>
                         {% endif %}
+                    </p>
 
-                    </div>
+                    <p><strong>Registered:</strong> {{ r.registration_datetime }}</p>
 
                 </div>
-                {% endfor %}
+
+                <div class="registration-actions">
+
+                    {% if r.status != "CANCELLED_NO_REFUND" %}
+                        <a href="/cancel/{{ r.registration_id }}/" class="btn cancel">
+                            Cancel
+                        </a>
+                    {% endif %}
+
+                </div>
 
             </div>
+            {% endfor %}
 
-        {% else %}
+        </div>
 
-            <div class="empty-state">
-                <h3>No registrations yet</h3>
-                <p>Go register for an event to see them here.</p>
-            </div>
+    {% else %}
 
-        {% endif %}
+        <div class="empty-state">
+            <h3>No registrations yet</h3>
+            <p>Go register for an event to see them here.</p>
+        </div>
 
-    </section>
+    {% endif %}
 
 </div>
 
