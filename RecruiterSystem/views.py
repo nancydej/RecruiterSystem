@@ -90,6 +90,10 @@ def user_profile(request):
     except User.DoesNotExist:
         return redirect("login")
 
+    # If the logged-in user is an Admin, send them to the admin profile page
+    if user.role == Role.ADMIN:
+        return redirect("admin_profile")
+
     return render(request, "users/user_profile.html", {"user": user})
 
 def admin_profile(request):
@@ -110,9 +114,21 @@ def admin_profile(request):
 
 
 def manage_users(request):
+    user_id = request.session.get("user_id")
+
+    if not user_id:
+        return redirect("login")
+
+    admin = User.objects.filter(
+        user_id=user_id,
+        role=Role.ADMIN
+    ).first()
+
+    if not admin:
+        return redirect("home")
+
     users = User.objects.all()
     return render(request, "users/manage_users.html", {"users": users})
-
 
 def add_user(request):
     if request.method == "POST":
