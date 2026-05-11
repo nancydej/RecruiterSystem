@@ -27,38 +27,27 @@
 </div>
 
 <!-- CONTENT -->
-<section>
+<section class="events-section">
 
     {% if registrations %}
 
-        <div class="registration-container">
+        <div class="event-grid">
 
             {% for r in registrations %}
-            <div class="registration-card">
+            <div class="event-card">
 
-                <div class="registration-banner">
+                <div class="event-header">
                     <h2>{{ r.event_name }}</h2>
                 </div>
 
-                <div class="registration-info">
-                    <p>
-                        <strong>Status:</strong>
-
-                        {% if r.status == "APPROVED" %}
-                            <span class="status approved">Approved</span>
-                        {% elif r.status == "PENDING" %}
-                            <span class="status pending">Pending</span>
-                        {% else %}
-                            <span class="status cancelled">{{ r.status }}</span>
-                        {% endif %}
-                    </p>
-
+                <div class="event-body">
+                    <p><strong>Status:</strong> {{ r.status }}</p>
                     <p><strong>Registered:</strong> {{ r.registration_datetime }}</p>
                 </div>
 
-                <div class="registration-actions">
+                <div class="event-footer">
                     {% if r.status != "CANCELLED_NO_REFUND" %}
-                        <a href="/cancel/{{ r.registration_id }}/" class="btn cancel">
+                        <a href="/cancel/{{ r.registration_id }}/" class="btn edit">
                             Cancel
                         </a>
                     {% endif %}

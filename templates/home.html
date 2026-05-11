@@ -1,11 +1,12 @@
 {% load static %}
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Home | Events</title>
 
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
 </head>
 
 <body>
@@ -15,49 +16,56 @@
     <div class="logo">Recruiter System</div>
 
     <ul class="nav-links">
-        <li><a href="/home/">Events</a></li>
-        <li><a href="/my-registrations/">Registrations</a></li>
-        <li><a href="/profile/">Profile</a></li>
+    <li><a href="{% url 'home' %}">Events</a></li>
+    <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
+    <li><a href="{% url 'user_profile' %}">Profile</a></li>
     </ul>
 </nav>
 
+<!-- HERO SECTION -->
+<header class="hero">
+    <h1>Upcoming Recruitment Events</h1>
+    <p>Discover, register, and manage your participation in events</p>
+</header>
 
-<!-- PAGE TITLE -->
-<div class="page-title">
-    <h1>Upcoming Events</h1>
-    <p>Browse and register for recruitment events</p>
-</div>
+<!-- EVENTS SECTION -->
+<section class="events-section">
 
+    {% if events %}
+        <div class="event-grid">
 
-<!-- EVENT CARDS -->
-<div class="event-container">
+            {% for event in events %}
+            <div class="event-card">
 
-    {% for event in events %}
-    <div class="event-card">
+                <div class="event-header">
+                    <h2>{{ event.event_name }}</h2>
+                    <span class="capacity">Capacity: {{ event.capacity }}</span>
+                </div>
 
-        <!-- Banner -->
-        <div class="event-banner">
-            <h2>{{ event.event_name }}</h2>
+                <div class="event-body">
+                    <p><strong> Location:</strong> {{ event.city }}, {{ event.state }}</p>
+                    <p><strong> Date:</strong> {{ event.event_date }}</p>
+                    <p class="description">{{ event.description }}</p>
+                </div>
+
+                <div class="event-footer">
+                    <a href="/register/{{ event.event_id }}/" class="btn register">Register</a>
+                    <a href="/event/{{ event.event_id }}/" class="btn view">View Details</a>
+                </div>
+
+            </div>
+            {% endfor %}
+
         </div>
 
-        <!-- Details -->
-        <div class="event-info">
-            <p><strong>Location:</strong> {{ event.city }}, {{ event.state }}</p>
-            <p><strong>Date:</strong> {{ event.event_datetime }}</p>
-            <p><strong>Capacity:</strong> {{ event.capacity }}</p>
-            <p class="desc">{{ event.description }}</p>
+    {% else %}
+        <div class="empty-state">
+            <h3>No events available right now</h3>
+            <p>Check back later for new recruitment opportunities.</p>
         </div>
+    {% endif %}
 
-        <!-- Actions -->
-        <div class="event-actions">
-            <a href="/register/{{ event.event_id }}/" class="btn register">Register</a>
-            <a href="/edit-event/{{ event.event_id }}/" class="btn edit">View</a>
-        </div>
-
-    </div>
-    {% endfor %}
-
-</div>
+</section>
 
 </body>
 </html>
