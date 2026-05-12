@@ -164,8 +164,23 @@
 
     <ul class="nav-links">
         <li><a href="{% url 'home' %}">Events</a></li>
-        <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
-        <li><a href="{% url 'user_profile' %}">Profile</a></li>
+
+        {% if request.user.is_authenticated %}
+            {% if request.user.role == "Admin" %}
+                <li><a href="{% url 'manage_users' %}">Manage Users</a></li>
+                <li><a href="{% url 'manage_events' %}">Manage Events</a></li>
+                <li><a href="{% url 'admin_profile' %}">Profile</a></li>
+            {% elif request.user.role == "Event Coordinator" %}
+                <li><a href="{% url 'manage_events' %}">Manage Events</a></li>
+                <li><a href="{% url 'event_coordinator_profile' %}">Profile</a></li>
+            {% else %}
+                <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
+                <li><a href="{% url 'user_profile' %}">Profile</a></li>
+            {% endif %}
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        {% else %}
+            <li><a href="{% url 'login' %}">Login</a></li>
+        {% endif %}
     </ul>
 </nav>
 
@@ -201,18 +216,10 @@
 
                     <div class="event-actions">
 
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'register_event' event.event_id %}" class="btn register">
-                                Register
-                            </a>
-
-                            <a href="{% url 'event_detail' event.event_id %}" class="btn register">
-                                View Details
-                            </a>
-                        {% else %}
-                            <a href="{% url 'login' %}" class="btn register">
-                                Login to Register
-                            </a>
+                        {% if not request.user.is_authenticated %}
+                            <a href="{% url 'login' %}" class="btn register">Login to Register</a>
+                        {% elif request.user.role == "Recruiter" %}
+                            <a href="{% url 'register_event' event.event_id %}" class="btn register">Register</a>
                         {% endif %}
 
                     </div>

@@ -222,37 +222,20 @@ def delete_event(request, event_id):
         event.delete()
     return redirect("manage_events")
 
-# EVENT DETAILS - view details
-
-@login_required
 def event_detail(request, event_id):
-
     event = get_object_or_404(Event, pk=event_id)
-
-    already_registered = Registration.objects.filter(
-        event=event,
-        recruiter=request.user
-    ).exists()
-
-    return render(request, "events/event_detail.html", {
-        "event": event,
-        "already_registered": already_registered
-    })
+    return render(request, "events/event_detail.html", {"event": event})
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                       REGISTRATIONS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 @login_required
 def register_event(request, event_id):
-
-    user = request.user
     event = get_object_or_404(Event, pk=event_id)
 
-    # prevent duplicate registration
-    if Registration.objects.filter(recruiter=user, event=event).exists():
+    if Registration.objects.filter(recruiter=request.user, event=event).exists():
         return redirect("my_registrations")
 
-    # capacity logic
     approved_count = Registration.objects.filter(
         event=event,
         status="APPROVED"
@@ -261,7 +244,7 @@ def register_event(request, event_id):
     status = "APPROVED" if approved_count < event.capacity else "PENDING"
 
     Registration.objects.create(
-        recruiter=user,
+        recruiter=request.user,
         event=event,
         status=status
     )
@@ -270,12 +253,10 @@ def register_event(request, event_id):
 
 @login_required
 def cancel_registration(request, registration_id):
-
-    user = request.user
-
     registration = get_object_or_404(
-        Registration.objects.select_related("event"),
-        pk=registration_id
+        Registration,
+        pk=registration_id,
+        recruiter=request.user
     )
 
     if (
@@ -300,33 +281,23 @@ def cancel_registration(request, registration_id):
     else:
         status = "CANCELLED_NO_REFUND"
 
-    updated = Registration.objects.filter(
-        pk=registration_id,
-        status__in=["PENDING", "APPROVED"]
-    ).update(
-        status=status,
-        cancel_datetime=timezone.now(),
-        cancelled_by=user
-    )
-
-    if registration.event.event_datetime < timezone.now():
-        return redirect("my_registrations")
-
-    if user.role == Role.ADMIN:
-        return redirect("admin_registrations")
-
-    elif user.role == Role.EVENT_COORDINATOR:
-        return redirect("coordinator_registrations")
+    registration.status = status
+    registration.cancel_datetime = timezone.now()
+    registration.cancelled_by_id = request.user
+    registration.save()
 
     return redirect("my_registrations")
 
 @login_required
 def my_registrations(request):
+    # user_id = request.session.get("user_id")
+    # if not user_id:
+    #     return redirect("login")
+    #
+    # user = User.objects.get(pk=user_id)
 
-    user = request.user
-
-    registrations = Registration.objects.select_related("event").filter(
-        recruiter=user
+    registrations_qs = Registration.objects.select_related("event").filter(
+        recruiter=request.user
     )
 
     return render(request, "registrations/my_registrations.html", {
@@ -335,10 +306,7 @@ def my_registrations(request):
 
 @login_required
 def coordinator_registrations(request):
-
-    user = request.user
-
-    if user.role != Role.EVENT_COORDINATOR:
+    if request.user.role != Role.EVENT_COORDINATOR:
         return redirect("home")
 
     registrations = Registration.objects.select_related("event", "recruiter").filter(
@@ -352,10 +320,7 @@ def coordinator_registrations(request):
 
 @login_required
 def admin_registrations(request):
-
-    user = request.user
-
-    if user.role != Role.ADMIN:
+    if request.user.role != Role.ADMIN:
         return redirect("home")
 
     registrations = Registration.objects.select_related("event", "recruiter").all()

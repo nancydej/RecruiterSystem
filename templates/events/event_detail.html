@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ event.event_name }}</title>
-
     <style>
         body {
             margin: 0;
@@ -22,10 +21,7 @@
             color: white;
         }
 
-        .logo {
-            font-weight: bold;
-            font-size: 18px;
-        }
+        .logo { font-size: 18px; font-weight: bold; }
 
         .nav-links {
             list-style: none;
@@ -39,128 +35,90 @@
             font-size: 14px;
         }
 
-        .nav-links a:hover {
-            opacity: 0.8;
-        }
+        .nav-links a:hover { opacity: 0.8; }
 
         .page-container {
-            max-width: 900px;
+            max-width: 600px;
             margin: 40px auto;
-            padding: 20px;
+            padding: 0 20px;
         }
 
         .card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 24px;
             box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         }
 
         .card-banner {
             background: #5545FE;
             color: white;
-            padding: 14px;
+            padding: 12px;
             border-radius: 10px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
-        .card-banner h1 {
-            margin: 0;
-            font-size: 20px;
-        }
+        .card-banner h1 { margin: 0; font-size: 22px; }
 
         .info p {
-            margin: 10px 0;
-            font-size: 14px;
-        }
-
-        .btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 14px;
-            background: #5545FE;
-            color: white;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .btn:hover {
-            opacity: 0.85;
-        }
-
-        .secondary-btn {
-            background: #A39CFC;
-            color: black;
-            margin-left: 10px;
+            margin: 12px 0;
+            font-size: 15px;
         }
 
         .actions {
-            margin-top: 20px;
+            margin-top: 24px;
             display: flex;
             gap: 10px;
         }
+
+        .btn {
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.2s ease;
+        }
+
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: #5545FE; color: white; }
+        .btn-secondary { background: #e5e7eb; color: #111; }
     </style>
 </head>
-
 <body>
 
 <nav class="navbar">
     <div class="logo">Recruiter System</div>
-
     <ul class="nav-links">
         <li><a href="{% url 'home' %}">Events</a></li>
-        <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
-        <li><a href="{% url 'user_profile' %}">Profile</a></li>
+        {% if request.user.is_authenticated %}
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        {% endif %}
     </ul>
 </nav>
 
 <div class="page-container">
-
     <div class="card">
-
         <div class="card-banner">
             <h1>{{ event.event_name }}</h1>
         </div>
 
         <div class="info">
             <p><strong>Location:</strong> {{ event.city }}, {{ event.state }}</p>
-            <p><strong>Date:</strong> {{ event.event_datetime }}</p>
+            <p><strong>Date & Time:</strong> {{ event.event_datetime }}</p>
             <p><strong>Capacity:</strong> {{ event.capacity }}</p>
-
             {% if event.description %}
                 <p><strong>Description:</strong> {{ event.description }}</p>
             {% endif %}
-
-            <p><strong>Created By:</strong> {{ event.created_by.username }}</p>
         </div>
 
         <div class="actions">
-
-            <a href="{% url 'home' %}" class="btn">Back to Events</a>
-
-            {% if user.is_authenticated %}
-
-                {% if already_registered %}
-                    <p style="margin-top: 20px; color: green; font-size: 14px;">
-                        ✔ You are already registered for this event
-                    </p>
-                {% else %}
-                    <a href="{% url 'register_event' event.event_id %}" class="btn secondary-btn">
-                        Register
-                    </a>
-                {% endif %}
-
-            {% else %}
-                <a href="{% url 'login' %}" class="btn secondary-btn">
-                    Login to Register
-                </a>
+            {% if request.user.role == "Recruiter" %}
+                <a href="{% url 'register_event' event.event_id %}" class="btn btn-primary">Register</a>
             {% endif %}
-
+            <a href="{% url 'home' %}" class="btn btn-secondary">Back to Events</a>
         </div>
-
     </div>
-
 </div>
 
 </body>
