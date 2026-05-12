@@ -4,20 +4,12 @@
     <meta charset="UTF-8">
     <title>Edit Event</title>
 <style>
-    /* =========================
-       BASE
-    ========================= */
-
     body {
         margin: 0;
         font-family: Arial, sans-serif;
         background: #f5f6fa;
         color: #333;
     }
-
-    /* =========================
-       NAVBAR
-    ========================= */
 
     .navbar {
         display: flex;
@@ -28,10 +20,7 @@
         color: white;
     }
 
-    .logo {
-        font-size: 18px;
-        font-weight: bold;
-    }
+    .logo { font-size: 18px; font-weight: bold; }
 
     .nav-links {
         list-style: none;
@@ -45,13 +34,7 @@
         font-size: 14px;
     }
 
-    .nav-links a:hover {
-        opacity: 0.8;
-    }
-
-    /* =========================
-       PAGE LAYOUT
-    ========================= */
+    .nav-links a:hover { opacity: 0.8; }
 
     .page-container {
         max-width: 600px;
@@ -59,14 +42,7 @@
         padding: 0 20px;
     }
 
-    h1 {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    /* =========================
-       FORM CARD
-    ========================= */
+    h1 { text-align: center; margin-bottom: 20px; }
 
     form {
         background: white;
@@ -75,9 +51,7 @@
         box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
 
-    .form-group {
-        margin-bottom: 14px;
-    }
+    .form-group { margin-bottom: 14px; }
 
     label {
         display: block;
@@ -86,8 +60,7 @@
         font-size: 14px;
     }
 
-    input,
-    textarea {
+    input, textarea {
         width: 100%;
         padding: 10px;
         border: 1px solid #ddd;
@@ -96,19 +69,13 @@
         box-sizing: border-box;
     }
 
-    textarea {
-        min-height: 90px;
-        resize: vertical;
-    }
-
-    /* =========================
-       BUTTONS
-    ========================= */
+    textarea { min-height: 90px; resize: vertical; }
 
     .actions {
         display: flex;
         gap: 10px;
         margin-top: 16px;
+        flex-wrap: wrap;
     }
 
     .btn {
@@ -121,80 +88,65 @@
         text-align: center;
     }
 
-    .btn-primary {
-        background: #5545FE;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        opacity: 0.85;
-    }
-
-    .btn-secondary {
-        background: #e5e7eb;
-        color: #111;
-    }
-
-    .btn-secondary:hover {
-        opacity: 0.85;
-    }
+    .btn-primary { background: #5545FE; color: white; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-secondary { background: #e5e7eb; color: #111; }
+    .btn-secondary:hover { opacity: 0.85; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { opacity: 0.85; }
 </style>
 </head>
 <body>
 <nav class="navbar">
     <div class="logo">Recruiter System</div>
-
     <ul class="nav-links">
         <li><a href="{% url 'home' %}">Events</a></li>
-        <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
         <li><a href="{% url 'user_profile' %}">Profile</a></li>
     </ul>
 </nav>
+
 <div class="page-container">
     <h1>Edit Event</h1>
     <form method="POST">
         {% csrf_token %}
         <div class="form-group">
             <label>Event Name</label>
-            <label>
-                <input type="text" name="event_name" value="{{ event.event_name }}" required>
-            </label>
+            <input type="text" name="event_name" value="{{ event.event_name }}" required>
         </div>
         <div class="form-group">
             <label>Description</label>
-            <label>
-                <textarea name="description">{{ event.description }}</textarea>
-            </label>
+            <textarea name="description">{{ event.description }}</textarea>
         </div>
         <div class="form-group">
             <label>City</label>
-            <label>
-                <input type="text" name="city" value="{{ event.city }}" required>
-            </label>
+            <input type="text" name="city" value="{{ event.city }}" required>
         </div>
         <div class="form-group">
             <label>State</label>
-            <label>
-                <input type="text" name="state" value="{{ event.state }}" required>
-            </label>
+            <input type="text" name="state" value="{{ event.state }}" required>
         </div>
         <div class="form-group">
             <label>Date & Time</label>
-            <label>
-                <input type="datetime-local" name="event_datetime"
-                       value="{{ event.event_datetime|date:'Y-m-d' }}T{{ event.event_datetime|time:'H:i' }}" required>
-            </label>
+            <input type="datetime-local" name="event_datetime"
+                   value="{{ event.event_datetime|date:'Y-m-d' }}T{{ event.event_datetime|time:'H:i' }}" required>
         </div>
         <div class="form-group">
             <label>Capacity</label>
-            <label>
-                <input type="number" name="capacity" value="{{ event.capacity }}" min="1" required>
-            </label>
+            <input type="number" name="capacity" value="{{ event.capacity }}" min="1" required>
         </div>
         <div class="actions">
             <button type="submit" class="btn btn-primary">Save Changes</button>
             <a href="{% url 'manage_events' %}" class="btn btn-secondary">Cancel</a>
         </div>
+    </form>
+
+    <!-- Delete as separate form so it's a POST not a GET -->
+    <form method="POST" action="{% url 'delete_event' event.event_id %}" style="margin-top: 12px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger"
+            onclick="return confirm('Are you sure you want to delete this event? This cannot be undone.')">
+            Delete Event
+        </button>
     </form>
 </div>
 </body>
