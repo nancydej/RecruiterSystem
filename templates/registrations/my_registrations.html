@@ -6,20 +6,12 @@
     <title>My Registrations</title>
 
     <style>
-        /* =========================
-           BASE PAGE STYLING
-        ========================= */
-
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f5f6fa;
             color: #333;
         }
-
-        /* =========================
-           NAVBAR
-        ========================= */
 
         .navbar {
             display: flex;
@@ -51,10 +43,6 @@
             opacity: 0.8;
         }
 
-        /* =========================
-           PAGE TITLE
-        ========================= */
-
         .page-title {
             text-align: center;
             margin: 30px 0 10px;
@@ -64,29 +52,17 @@
             font-size: 28px;
         }
 
-        /* =========================
-           PAGE CONTAINER
-        ========================= */
-
         .page-container {
             max-width: 1100px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* =========================
-           GRID
-        ========================= */
-
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
-
-        /* =========================
-           CARD
-        ========================= */
 
         .card {
             background: white;
@@ -96,16 +72,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: 0.2s ease;
         }
-
-        .card:hover {
-            transform: translateY(-3px);
-        }
-
-        /* =========================
-           BANNER
-        ========================= */
 
         .card-banner {
             background: #5545FE;
@@ -120,18 +87,10 @@
             margin: 0;
         }
 
-        /* =========================
-           INFO SECTION
-        ========================= */
-
         .registration-info p {
             margin: 10px 0;
             font-size: 14px;
         }
-
-        /* =========================
-           STATUS BADGES
-        ========================= */
 
         .status {
             padding: 4px 10px;
@@ -156,10 +115,6 @@
             color: #991b1b;
         }
 
-        /* =========================
-           ACTIONS
-        ========================= */
-
         .registration-actions {
             margin-top: 10px;
             display: flex;
@@ -171,7 +126,6 @@
             border-radius: 8px;
             text-decoration: none;
             font-size: 14px;
-            transition: 0.2s ease;
         }
 
         .btn:hover {
@@ -183,10 +137,6 @@
             color: black;
         }
 
-        /* =========================
-           EMPTY STATE
-        ========================= */
-
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -195,7 +145,6 @@
             margin-top: 20px;
             color: #666;
         }
-
     </style>
 </head>
 
@@ -206,20 +155,18 @@
     <div class="logo">Recruiter System</div>
 
     <ul class="nav-links">
-        <li><a href="/home/">Events</a></li>
-        <li><a href="/my-registrations/">Registrations</a></li>
-        <li><a href="/profile/">Profile</a></li>
+        <li><a href="{% url 'home' %}">Events</a></li>
+        <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
+        <li><a href="{% url 'user_profile' %}">Profile</a></li>
     </ul>
 </nav>
 
 <div class="page-container">
 
-    <!-- TITLE -->
     <div class="page-title">
         <h1>My Registrations</h1>
     </div>
 
-    <!-- CONTENT -->
     {% if registrations %}
 
         <div class="grid">
@@ -252,7 +199,7 @@
                 <div class="registration-actions">
 
                     {% if r.status != "CANCELLED_NO_REFUND" %}
-                        <a href="/cancel/{{ r.registration_id }}/" class="btn cancel">
+                        <a href="{% url 'cancel_registration' r.registration_id %}" class="btn cancel">
                             Cancel
                         </a>
                     {% endif %}
