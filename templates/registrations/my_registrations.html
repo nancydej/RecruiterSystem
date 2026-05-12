@@ -198,14 +198,13 @@
 
                 <div class="registration-actions">
 
-                    {% if r.status != "CANCELLED_NO_REFUND" %}
+                    {% if "CANCELLED" not in r.status %}
                         <a href="{% url 'cancel_registration' r.registration_id %}" class="btn cancel">
                             Cancel
                         </a>
                     {% endif %}
 
                 </div>
-
             </div>
             {% endfor %}
 
