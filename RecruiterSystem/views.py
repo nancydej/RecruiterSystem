@@ -10,18 +10,21 @@ from django.utils import timezone
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Login(View):
     def get(self, request):
-        return render(request, "login.html")
+        return render(request, "auth/login.html")
 
     def post(self, request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        user = authenticate(request, email=email, password=password)
+        user = authenticate(request, username=email, password=password)
 
         if user is None:
-            return render(request, "login.html", {"error": "Invalid email or password"})
+            return render(request, "auth/login.html", {"error": "Invalid email or password"})
 
         login(request, user)
+
+        request.session["user_id"] = user.user_id
+        request.session["role"] = user.role
 
         #redirect by role
         if user.role == Role.ADMIN:
@@ -38,7 +41,7 @@ class Logout(View):
 
 class Signup(View):
     def get(self, request):
-        return render(request, "signup.html")
+        return render(request, "auth/signup.html")
 
     def post(self, request):
         first_name = request.POST.get("first_name")
@@ -50,10 +53,10 @@ class Signup(View):
 
         #prevent duplicate accounts using email
         if User.objects.filter(email=email).exists():
-            return render(request, "signup.html", {"error": "Email already exists"})
+            return render(request, "auth/signup.html", {"error": "Email already exists"})
 
         if role not in dict(Role.choices):
-            return render(request, "signup.html", {"error": "Invalid role"})
+            return render(request, "auth/signup.html", {"error": "Invalid role"})
 
         #create user
         user = User.objects.create_user(
