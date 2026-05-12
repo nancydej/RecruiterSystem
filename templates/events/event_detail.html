@@ -3,8 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Profile</title>
-
+    <title>{{ event.event_name }}</title>
     <style>
         body {
             margin: 0;
@@ -22,10 +21,7 @@
             color: white;
         }
 
-        .logo {
-            font-size: 18px;
-            font-weight: bold;
-        }
+        .logo { font-size: 18px; font-weight: bold; }
 
         .nav-links {
             list-style: none;
@@ -39,33 +35,15 @@
             font-size: 14px;
         }
 
-        .nav-links a:hover {
-            opacity: 0.8;
-        }
+        .nav-links a:hover { opacity: 0.8; }
 
         .page-container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 40px 20px 20px;
-        }
-
-        .hero h1 {
-            font-size: 30px;
-            margin-bottom: 8px;
-        }
-
-        .hero p {
-            color: #666;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
 
         .card {
-            max-width: 520px;
-            margin: 30px auto;
             background: white;
             border-radius: 12px;
             padding: 24px;
@@ -81,25 +59,17 @@
             text-align: center;
         }
 
-        .card-banner h2 {
-            margin: 0;
-            font-size: 20px;
-        }
+        .card-banner h1 { margin: 0; font-size: 22px; }
 
-        .profile-info p {
+        .info p {
             margin: 12px 0;
             font-size: 15px;
-        }
-
-        .profile-info strong {
-            color: #111;
         }
 
         .actions {
             margin-top: 24px;
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
         }
 
         .btn {
@@ -108,66 +78,47 @@
             text-decoration: none;
             font-size: 14px;
             transition: 0.2s ease;
-            text-align: center;
         }
 
-        .btn:hover {
-            opacity: 0.85;
-        }
-
-        .btn-primary {
-            background: #4f46e5;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #111;
-        }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: #5545FE; color: white; }
+        .btn-secondary { background: #e5e7eb; color: #111; }
     </style>
 </head>
-
 <body>
 
 <nav class="navbar">
     <div class="logo">Recruiter System</div>
-
     <ul class="nav-links">
         <li><a href="{% url 'home' %}">Events</a></li>
-{#        <li><a href="{% url 'my_registrations' %}">Registrations</a></li>#}
-        <li><a href="{% url 'admin_profile' %}">Profile</a></li>
-        <li><a href="{% url 'logout' %}">Logout</a></li>
+        {% if request.user.is_authenticated %}
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        {% endif %}
     </ul>
 </nav>
 
 <div class="page-container">
-
-    <div class="hero">
-        <h1>Admin Profile</h1>
-        <p>Manage administrator information and user access</p>
-    </div>
-
     <div class="card">
-
         <div class="card-banner">
-            <h2>{{ admin.username }}</h2>
+            <h1>{{ event.event_name }}</h1>
         </div>
 
-        <div class="profile-info">
-            <p><strong>Admin ID:</strong> {{ admin.user_id }}</p>
-            <p><strong>Name:</strong> {{ admin.first_name }} {{ admin.last_name }}</p>
-            <p><strong>Email:</strong> {{ admin.email }}</p>
-            <p><strong>Phone:</strong> {{ admin.phone_number }}</p>
-            <p><strong>Role:</strong> {{ admin.role }}</p>
+        <div class="info">
+            <p><strong>Location:</strong> {{ event.city }}, {{ event.state }}</p>
+            <p><strong>Date & Time:</strong> {{ event.event_datetime }}</p>
+            <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+            {% if event.description %}
+                <p><strong>Description:</strong> {{ event.description }}</p>
+            {% endif %}
         </div>
 
         <div class="actions">
-            <a href="{% url 'manage_users' %}" class="btn btn-primary">Manage Users</a>
+            {% if request.user.role == "Recruiter" %}
+                <a href="{% url 'register_event' event.event_id %}" class="btn btn-primary">Register</a>
+            {% endif %}
             <a href="{% url 'home' %}" class="btn btn-secondary">Back to Events</a>
         </div>
-
     </div>
-
 </div>
 
 </body>
