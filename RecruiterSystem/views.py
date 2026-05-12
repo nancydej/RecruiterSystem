@@ -330,7 +330,7 @@ def my_registrations(request):
     )
 
     return render(request, "registrations/my_registrations.html", {
-        "registrations": registrations
+        "registrations": registrations_qs
     })
 
 @login_required
