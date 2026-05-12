@@ -29,6 +29,7 @@ urlpatterns = [
     path('home/', views.home, name='home'),
     path('profile/', views.user_profile, name='user_profile'),
     path('admin-profile/', views.admin_profile, name='admin_profile'),
+    path('event-coordinator-profile/', views.event_coordinator_profile, name='event_coordinator_profile'),
     path('manage-users/', views.manage_users, name='manage_users'),
     path('add-user/', views.add_user, name='add_user'),
     path('edit-user/<int:user_id>/', views.edit_user, name='edit_user'),
@@ -39,5 +40,6 @@ urlpatterns = [
     path('events/', views.manage_events, name='manage_events'),
     path('events/add/', views.add_event, name='add_event'),
     path('events/edit/<int:event_id>/', views.edit_event, name='edit_event'),
+    path('events/delete/<int:event_id>/', views.delete_event, name='delete_event'),
 
 ]
