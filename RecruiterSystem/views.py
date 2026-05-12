@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from .models import User, Role, Event, Registration
 from django.db import connection
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
@@ -12,7 +12,7 @@ from django.contrib.auth import logout
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Login(View):
     def get(self, request):
-        return render(request, "auth/login.html")
+        return render(request, "login.html")
 
     def post(self, request):
         email = request.POST.get("email")
@@ -21,12 +21,9 @@ class Login(View):
         user = authenticate(request, username=email, password=password)
 
         if user is None:
-            return render(request, "auth/login.html", {"error": "Invalid email or password"})
+            return render(request, "login.html", {"error": "Invalid email or password"})
 
         login(request, user)
-
-        request.session["user_id"] = user.user_id
-        request.session["role"] = user.role
 
         #redirect by role
         if user.role == Role.ADMIN:
@@ -43,7 +40,7 @@ class Logout(View):
 
 class Signup(View):
     def get(self, request):
-        return render(request, "auth/signup.html")
+        return render(request, "signup.html")
 
     def post(self, request):
         first_name = request.POST.get("first_name")
@@ -55,10 +52,10 @@ class Signup(View):
 
         #prevent duplicate accounts using email
         if User.objects.filter(email=email).exists():
-            return render(request, "auth/signup.html", {"error": "Email already exists"})
+            return render(request, "signup.html", {"error": "Email already exists"})
 
         if role not in dict(Role.choices):
-            return render(request, "auth/signup.html", {"error": "Invalid role"})
+            return render(request, "signup.html", {"error": "Invalid role"})
 
         #create user
         user = User.objects.create_user(
@@ -92,11 +89,12 @@ def home(request):
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                           USERS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 @login_required
 def user_profile(request):
     if request.user.role == Role.ADMIN:
         return redirect("admin_profile")
+    elif request.user.role == Role.EVENT_COORDINATOR:
+        return redirect("event_coordinator_profile")
 
     return render(request, "users/user_profile.html", {
         "user": request.user
@@ -111,7 +109,19 @@ def admin_profile(request):
         "admin": request.user
     })
 
+
 @login_required
+def event_coordinator_profile(request):
+    if request.user.role != Role.EVENT_COORDINATOR:
+        return redirect("login")
+
+    events = Event.objects.filter(created_by=request.user).order_by('-event_datetime')
+
+    return render(request, "users/event_coordinator_profile.html", {
+        "user": request.user,
+        "events": events
+    })
+
 def manage_users(request):
     if request.user.role != Role.ADMIN:
         return redirect("home")
@@ -166,13 +176,12 @@ def manage_events(request):
 
 
 def add_event(request):
-    role = request.session.get("role")
-    if role not in ["Admin", "Event Coordinator"]:
+    if request.user.role not in [Role.ADMIN, Role.EVENT_COORDINATOR]:
         return redirect("manage_events")
 
     if request.method == "POST":
         Event.objects.create(
-            created_by_id=request.session.get("user_id"),
+            created_by=request.user,
             event_name=request.POST.get("event_name"),
             description=request.POST.get("description"),
             city=request.POST.get("city"),
@@ -186,8 +195,7 @@ def add_event(request):
 
 
 def edit_event(request, event_id):
-    role = request.session.get("role")
-    if role not in ["Admin", "Event Coordinator"]:
+    if request.user.role not in [Role.ADMIN, Role.EVENT_COORDINATOR]:
         return redirect("manage_events")
 
     event = get_object_or_404(Event, pk=event_id)
@@ -204,15 +212,24 @@ def edit_event(request, event_id):
 
     return render(request, "events/edit_event.html", {"event": event})
 
+@login_required
+def delete_event(request, event_id):
+    if request.user.role not in [Role.ADMIN, Role.EVENT_COORDINATOR]:
+        return redirect("home")
 
+    event = get_object_or_404(Event, pk=event_id)
+    if request.method == "POST":
+        event.delete()
+    return redirect("manage_events")
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                       REGISTRATIONS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-@login_required
 def register_event(request, event_id):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
 
-    user = request.user
+    user = get_object_or_404(User, pk=user_id)
     event = get_object_or_404(Event, pk=event_id)
 
     # prevent duplicate registration
@@ -235,16 +252,15 @@ def register_event(request, event_id):
 
     return redirect("my_registrations")
 
-
-@login_required
 def cancel_registration(request, registration_id):
-
-    user = request.user
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
 
     registration = get_object_or_404(
         Registration,
         pk=registration_id,
-        recruiter=user
+        recruiter_id=user_id
     )
 
     # prevent cancelling twice
@@ -263,63 +279,32 @@ def cancel_registration(request, registration_id):
 
     registration.status = status
     registration.cancel_datetime = timezone.now()
-    registration.cancelled_by = user
+    registration.cancelled_by_id = user_id
     registration.save()
 
     return redirect("my_registrations")
 
-
-@login_required
 def my_registrations(request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
 
-    user = request.user
+    user = User.objects.get(pk=user_id)
 
     registrations_qs = Registration.objects.select_related("event").filter(
         recruiter=user
     )
 
-    registrations = [
-        {
+    registrations = []
+
+    for r in registrations_qs:
+        registrations.append({
             "registration_id": r.registration_id,
             "event_name": r.event.event_name,
             "status": r.status,
             "registration_datetime": r.registration_datetime,
-        }
-        for r in registrations_qs
-    ]
+        })
 
     return render(request, "registrations/my_registrations.html", {
-        "registrations": registrations
-    })
-
-
-@login_required
-def coordinator_registrations(request):
-
-    user = request.user
-
-    if user.role != Role.EVENT_COORDINATOR:
-        return redirect("home")
-
-    registrations = Registration.objects.select_related("event", "recruiter").filter(
-        event__created_by=user
-    )
-
-    return render(request, "registrations/coordinator_registrations.html", {
-        "registrations": registrations
-    })
-
-
-@login_required
-def admin_registrations(request):
-
-    user = request.user
-
-    if user.role != Role.ADMIN:
-        return redirect("home")
-
-    registrations = Registration.objects.select_related("event", "recruiter").all()
-
-    return render(request, "registrations/admin_registrations.html", {
         "registrations": registrations
     })
