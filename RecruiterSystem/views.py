@@ -308,3 +308,35 @@ def my_registrations(request):
     return render(request, "registrations/my_registrations.html", {
         "registrations": registrations
     })
+
+@login_required
+def coordinator_registrations(request):
+    user_id = request.session.get("user_id")
+    role = request.session.get("role")
+
+    if role != "Event Coordinator":
+        return redirect("home")
+
+    user = get_object_or_404(User, pk=user_id)
+
+    registrations = Registration.objects.select_related("event", "recruiter").filter(
+        event__created_by=user
+    )
+
+    return render(request, "registrations/coordinator_registrations.html", {
+        "registrations": registrations
+    })
+
+
+@login_required
+def admin_registrations(request):
+    role = request.session.get("role")
+
+    if role != "Admin":
+        return redirect("home")
+
+    registrations = Registration.objects.select_related("event", "recruiter").all()
+
+    return render(request, "registrations/admin_registrations.html", {
+        "registrations": registrations
+    })
