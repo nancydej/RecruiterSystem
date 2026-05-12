@@ -6,17 +6,12 @@
     <title>Admin Registrations</title>
 
     <style>
-
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f5f6fa;
             color: #333;
         }
-
-        /* =========================
-           NAVBAR
-        ========================= */
 
         .navbar {
             display: flex;
@@ -48,10 +43,6 @@
             opacity: 0.8;
         }
 
-        /* =========================
-           PAGE TITLE
-        ========================= */
-
         .page-title {
             text-align: center;
             margin: 30px 0 10px;
@@ -60,10 +51,6 @@
         .page-title h1 {
             font-size: 28px;
         }
-
-        /* =========================
-           SEARCH BAR
-        ========================= */
 
         .search-container {
             margin: 20px auto;
@@ -88,29 +75,17 @@
             cursor: pointer;
         }
 
-        /* =========================
-           PAGE CONTAINER
-        ========================= */
-
         .page-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* =========================
-           GRID
-        ========================= */
-
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 20px;
         }
-
-        /* =========================
-           CARD
-        ========================= */
 
         .card {
             background: white;
@@ -123,10 +98,6 @@
         .card:hover {
             transform: translateY(-3px);
         }
-
-        /* =========================
-           BANNER
-        ========================= */
 
         .card-banner {
             background: #5545FE;
@@ -141,18 +112,10 @@
             font-size: 16px;
         }
 
-        /* =========================
-           INFO
-        ========================= */
-
         .registration-info p {
             margin: 10px 0;
             font-size: 14px;
         }
-
-        /* =========================
-           STATUS
-        ========================= */
 
         .status {
             padding: 4px 10px;
@@ -162,24 +125,9 @@
             display: inline-block;
         }
 
-        .status.approved {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status.pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status.cancelled {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* =========================
-           ACTIONS
-        ========================= */
+        .status.approved { background: #d1fae5; color: #065f46; }
+        .status.pending { background: #fef3c7; color: #92400e; }
+        .status.cancelled { background: #fee2e2; color: #991b1b; }
 
         .registration-actions {
             margin-top: 16px;
@@ -193,31 +141,13 @@
             border-radius: 8px;
             text-decoration: none;
             font-size: 14px;
-            transition: 0.2s ease;
         }
 
-        .btn:hover {
-            opacity: 0.85;
-        }
+        .btn:hover { opacity: 0.85; }
 
-        .btn.approve {
-            background: #22c55e;
-            color: white;
-        }
-
-        .btn.cancel {
-            background: #A39CFC;
-            color: black;
-        }
-
-        .btn.override {
-            background: #f59e0b;
-            color: black;
-        }
-
-        /* =========================
-           EMPTY STATE
-        ========================= */
+        .btn.approve { background: #22c55e; color: white; }
+        .btn.cancel { background: #A39CFC; color: black; }
+        .btn.override { background: #f59e0b; color: black; }
 
         .empty-state {
             text-align: center;
@@ -227,7 +157,6 @@
             margin-top: 20px;
             color: #666;
         }
-
     </style>
 </head>
 
@@ -237,10 +166,10 @@
     <div class="logo">Recruiter System</div>
 
     <ul class="nav-links">
-        <li><a href="/admin-profile/">Dashboard</a></li>
-        <li><a href="/manage-events/">Events</a></li>
-        <li><a href="/admin-registrations/">Registrations</a></li>
-        <li><a href="/manage-users/">Users</a></li>
+        <li><a href="{% url 'admin_profile' %}">Dashboard</a></li>
+        <li><a href="{% url 'manage_events' %}">Events</a></li>
+        <li><a href="{% url 'admin_registrations' %}">Registrations</a></li>
+        <li><a href="{% url 'manage_users' %}">Users</a></li>
     </ul>
 </nav>
 
@@ -269,20 +198,14 @@
                 <div class="registration-info">
 
                     <p><strong>Recruiter:</strong> {{ r.recruiter.username }}</p>
-
-                    <p><strong>Coordinator:</strong>
-                        {{ r.event.created_by.username }}
-                    </p>
+                    <p><strong>Coordinator:</strong> {{ r.event.created_by.username }}</p>
 
                     <p>
                         <strong>Status:</strong>
-
                         {% if r.status == "APPROVED" %}
                             <span class="status approved">Approved</span>
-
                         {% elif r.status == "PENDING" %}
                             <span class="status pending">Pending</span>
-
                         {% else %}
                             <span class="status cancelled">{{ r.status }}</span>
                         {% endif %}
@@ -295,19 +218,19 @@
                 <div class="registration-actions">
 
                     {% if r.status == "PENDING" %}
-                        <a href="/approve/{{ r.registration_id }}/"
+                        <a href="{% url 'approve_registration' r.registration_id %}"
                            class="btn approve">
                             Approve
                         </a>
                     {% endif %}
 
-                    <a href="/override/{{ r.registration_id }}/"
+                    <a href="{% url 'override_registration' r.registration_id %}"
                        class="btn override">
                         Override
                     </a>
 
                     {% if "CANCELLED" not in r.status %}
-                        <a href="/cancel/{{ r.registration_id }}/"
+                        <a href="{% url 'cancel_registration' r.registration_id %}"
                            class="btn cancel">
                             Cancel
                         </a>
