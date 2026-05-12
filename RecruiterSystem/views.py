@@ -209,12 +209,10 @@ def edit_event(request, event_id):
 #                       REGISTRATIONS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+@login_required
 def register_event(request, event_id):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("login")
 
-    user = get_object_or_404(User, pk=user_id)
+    user = request.user
     event = get_object_or_404(Event, pk=event_id)
 
     # prevent duplicate registration
@@ -238,12 +236,10 @@ def register_event(request, event_id):
     return redirect("my_registrations")
 
 
+@login_required
 def cancel_registration(request, registration_id):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("login")
 
-    user = get_object_or_404(User, pk=user_id)
+    user = request.user
 
     registration = get_object_or_404(
         Registration,
@@ -273,26 +269,24 @@ def cancel_registration(request, registration_id):
     return redirect("my_registrations")
 
 
+@login_required
 def my_registrations(request):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("login")
 
-    user = get_object_or_404(User, pk=user_id)
+    user = request.user
 
     registrations_qs = Registration.objects.select_related("event").filter(
         recruiter=user
     )
 
-    registrations = []
-
-    for r in registrations_qs:
-        registrations.append({
+    registrations = [
+        {
             "registration_id": r.registration_id,
             "event_name": r.event.event_name,
             "status": r.status,
             "registration_datetime": r.registration_datetime,
-        })
+        }
+        for r in registrations_qs
+    ]
 
     return render(request, "registrations/my_registrations.html", {
         "registrations": registrations
@@ -301,13 +295,11 @@ def my_registrations(request):
 
 @login_required
 def coordinator_registrations(request):
-    user_id = request.session.get("user_id")
-    role = request.session.get("role")
 
-    if role != "Event Coordinator":
+    user = request.user
+
+    if user.role != Role.EVENT_COORDINATOR:
         return redirect("home")
-
-    user = get_object_or_404(User, pk=user_id)
 
     registrations = Registration.objects.select_related("event", "recruiter").filter(
         event__created_by=user
@@ -320,9 +312,10 @@ def coordinator_registrations(request):
 
 @login_required
 def admin_registrations(request):
-    role = request.session.get("role")
 
-    if role != "Admin":
+    user = request.user
+
+    if user.role != Role.ADMIN:
         return redirect("home")
 
     registrations = Registration.objects.select_related("event", "recruiter").all()
