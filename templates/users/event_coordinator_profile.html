@@ -1,0 +1,277 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Coordinator Profile</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #5545FE;
+            padding: 14px 24px;
+            color: white;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 16px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 40px 20px 20px;
+        }
+
+        .hero h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            color: #666;
+        }
+
+        .card {
+            max-width: 520px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        .card-banner {
+            background: #5545FE;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .card-banner h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .profile-info p {
+            margin: 12px 0;
+            font-size: 15px;
+        }
+
+        .profile-info strong {
+            color: #111;
+        }
+
+        .actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.2s ease;
+            text-align: center;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111;
+        }
+
+        /* Events Section */
+        .events-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0 16px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .events-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        .events-table thead {
+            background: #5545FE;
+            color: white;
+        }
+
+        .events-table th,
+        .events-table td {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .events-table tbody tr:nth-child(even) {
+            background: #f9f9ff;
+        }
+
+        .events-table tbody tr:hover {
+            background: #efefff;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: 0.2s ease;
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-sm:hover {
+            opacity: 0.85;
+        }
+
+        .no-events {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        .no-events a {
+            color: #5545FE;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">Recruiter System</div>
+    <ul class="nav-links">
+        <li><a href="{% url 'home' %}">Events</a></li>
+        <li><a href="{% url 'manage_events' %}">Manage Events</a></li>
+        <li><a href="{% url 'logout' %}">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="page-container">
+
+    <div class="hero">
+        <h1>Event Coordinator Profile</h1>
+        <p>Manage your profile and oversee events</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="card">
+        <div class="card-banner">
+            <h2>{{ user.username }}</h2>
+        </div>
+
+        <div class="profile-info">
+            <p><strong>ID:</strong> {{ user.user_id }}</p>
+            <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Phone:</strong> {{ user.phone_number }}</p>
+            <p><strong>Role:</strong> {{ user.role }}</p>
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'manage_events' %}" class="btn btn-primary">Manage Events</a>
+            <a href="{% url 'home' %}" class="btn btn-secondary">Back to Events</a>
+        </div>
+    </div>
+
+    <!-- Events Section -->
+    <div class="events-header">
+        <div class="section-title">Your Events</div>
+        <a href="{% url 'add_event' %}" class="btn btn-primary">+ Add Event</a>
+    </div>
+
+    {% if events %}
+    <table class="events-table">
+        <thead>
+            <tr>
+                <th>Event Name</th>
+                <th>City, State</th>
+                <th>Date & Time</th>
+                <th>Capacity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+            <tr>
+                <td>{{ event.event_name }}</td>
+                <td>{{ event.city }}, {{ event.state }}</td>
+                <td>{{ event.event_datetime|date:"M d, Y g:i A" }}</td>
+                <td>{{ event.capacity }}</td>
+                <td>
+                    <a href="{% url 'edit_event' event.event_id %}" class="btn-sm">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-events">
+        <p>No events yet. <a href="{% url 'add_event' %}">Create your first event.</a></p>
+    </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
