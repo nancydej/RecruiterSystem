@@ -23,8 +23,8 @@
         }
 
         .logo {
-            font-weight: bold;
             font-size: 18px;
+            font-weight: bold;
         }
 
         .nav-links {
@@ -52,7 +52,7 @@
         .card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 24px;
             box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         }
 
@@ -61,44 +61,53 @@
             color: white;
             padding: 14px;
             border-radius: 10px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .card-banner h1 {
             margin: 0;
-            font-size: 20px;
+            font-size: 22px;
         }
 
         .info p {
-            margin: 10px 0;
-            font-size: 14px;
+            margin: 12px 0;
+            font-size: 15px;
+        }
+
+        .actions {
+            margin-top: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            display: inline-block;
-            margin-top: 20px;
             padding: 10px 14px;
-            background: #5545FE;
-            color: white;
             border-radius: 8px;
             text-decoration: none;
             font-size: 14px;
+            transition: 0.2s ease;
         }
 
         .btn:hover {
             opacity: 0.85;
         }
 
-        .secondary-btn {
-            background: #A39CFC;
-            color: black;
-            margin-left: 10px;
+        .btn-primary {
+            background: #5545FE;
+            color: white;
         }
 
-        .actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111;
+        }
+
+        .success-message {
+            color: green;
+            font-size: 14px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -110,8 +119,28 @@
 
     <ul class="nav-links">
         <li><a href="{% url 'home' %}">Events</a></li>
-        <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
-        <li><a href="{% url 'user_profile' %}">Profile</a></li>
+
+        {% if request.user.is_authenticated %}
+
+            {% if request.user.role == "Admin" %}
+                <li><a href="{% url 'admin_registrations' %}">Registrations</a></li>
+                <li><a href="{% url 'admin_profile' %}">Profile</a></li>
+
+            {% elif request.user.role == "Event Coordinator" %}
+                <li><a href="{% url 'coordinator_registrations' %}">Registrations</a></li>
+                <li><a href="{% url 'event_coordinator_profile' %}">Profile</a></li>
+
+            {% else %}
+                <li><a href="{% url 'my_registrations' %}">Registrations</a></li>
+                <li><a href="{% url 'user_profile' %}">Profile</a></li>
+
+            {% endif %}
+
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+
+        {% else %}
+            <li><a href="{% url 'login' %}">Login</a></li>
+        {% endif %}
     </ul>
 </nav>
 
@@ -125,36 +154,60 @@
 
         <div class="info">
             <p><strong>Location:</strong> {{ event.city }}, {{ event.state }}</p>
-            <p><strong>Date:</strong> {{ event.event_datetime }}</p>
+
+            <p>
+                <strong>Date & Time:</strong>
+                {{ event.event_datetime }}
+            </p>
+
             <p><strong>Capacity:</strong> {{ event.capacity }}</p>
 
             {% if event.description %}
-                <p><strong>Description:</strong> {{ event.description }}</p>
+                <p>
+                    <strong>Description:</strong>
+                    {{ event.description }}
+                </p>
             {% endif %}
 
-            <p><strong>Created By:</strong> {{ event.created_by.username }}</p>
+            <p>
+                <strong>Created By:</strong>
+                {{ event.created_by.username }}
+            </p>
         </div>
 
         <div class="actions">
 
-            <a href="{% url 'home' %}" class="btn">Back to Events</a>
+            <a href="{% url 'home' %}" class="btn btn-secondary">
+                Back to Events
+            </a>
 
-            {% if user.is_authenticated %}
+            {% if request.user.is_authenticated %}
 
-                {% if already_registered %}
-                    <p style="margin-top: 20px; color: green; font-size: 14px;">
-                        ✔ You are already registered for this event
-                    </p>
-                {% else %}
-                    <a href="{% url 'register_event' event.event_id %}" class="btn secondary-btn">
-                        Register
-                    </a>
+                {% if request.user.role == "Recruiter" %}
+
+                    {% if already_registered %}
+
+                        <span class="success-message">
+                            ✔ You are already registered
+                        </span>
+
+                    {% else %}
+
+                        <a href="{% url 'register_event' event.event_id %}"
+                           class="btn btn-primary">
+                            Register
+                        </a>
+
+                    {% endif %}
+
                 {% endif %}
 
             {% else %}
-                <a href="{% url 'login' %}" class="btn secondary-btn">
+
+                <a href="{% url 'login' %}" class="btn btn-primary">
                     Login to Register
                 </a>
+
             {% endif %}
 
         </div>
