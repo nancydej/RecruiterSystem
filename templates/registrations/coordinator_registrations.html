@@ -6,17 +6,12 @@
     <title>Coordinator Registrations</title>
 
     <style>
-
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f5f6fa;
             color: #333;
         }
-
-        /* =========================
-           NAVBAR
-        ========================= */
 
         .navbar {
             display: flex;
@@ -48,10 +43,6 @@
             opacity: 0.8;
         }
 
-        /* =========================
-           PAGE TITLE
-        ========================= */
-
         .page-title {
             text-align: center;
             margin: 30px 0 10px;
@@ -61,29 +52,17 @@
             font-size: 28px;
         }
 
-        /* =========================
-           PAGE CONTAINER
-        ========================= */
-
         .page-container {
             max-width: 1100px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* =========================
-           GRID
-        ========================= */
-
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
         }
-
-        /* =========================
-           CARD
-        ========================= */
 
         .card {
             background: white;
@@ -96,10 +75,6 @@
         .card:hover {
             transform: translateY(-3px);
         }
-
-        /* =========================
-           BANNER
-        ========================= */
 
         .card-banner {
             background: #5545FE;
@@ -114,18 +89,10 @@
             font-size: 16px;
         }
 
-        /* =========================
-           INFO
-        ========================= */
-
         .registration-info p {
             margin: 10px 0;
             font-size: 14px;
         }
-
-        /* =========================
-           STATUS
-        ========================= */
 
         .status {
             padding: 4px 10px;
@@ -149,10 +116,6 @@
             background: #fee2e2;
             color: #991b1b;
         }
-
-        /* =========================
-           ACTION BUTTONS
-        ========================= */
 
         .registration-actions {
             margin-top: 16px;
@@ -183,10 +146,6 @@
             color: black;
         }
 
-        /* =========================
-           EMPTY STATE
-        ========================= */
-
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -195,7 +154,6 @@
             margin-top: 20px;
             color: #666;
         }
-
     </style>
 </head>
 
@@ -205,9 +163,9 @@
     <div class="logo">Recruiter System</div>
 
     <ul class="nav-links">
-        <li><a href="/event_coordinator_profile/">Events</a></li>
-        <li><a href="/coordinator-registrations/">Registrations</a></li>
-        <li><a href="/profile/">Profile</a></li>
+        <li><a href="{% url 'event_coordinator_profile' %}">Events</a></li>
+        <li><a href="{% url 'coordinator_registrations' %}">Registrations</a></li>
+        <li><a href="{% url 'user_profile' %}">Profile</a></li>
     </ul>
 </nav>
 
@@ -257,14 +215,14 @@
                 <div class="registration-actions">
 
                     {% if r.status == "PENDING" %}
-                        <a href="/approve/{{ r.registration_id }}/"
+                        <a href="{% url 'approve_registration' r.registration_id %}"
                            class="btn approve">
                             Approve
                         </a>
                     {% endif %}
 
                     {% if "CANCELLED" not in r.status %}
-                        <a href="/cancel/{{ r.registration_id }}/"
+                        <a href="{% url 'cancel_registration' r.registration_id %}"
                            class="btn cancel">
                             Cancel
                         </a>
