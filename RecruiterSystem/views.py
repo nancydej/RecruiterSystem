@@ -74,16 +74,16 @@ class Signup(View):
 #                       HOMEPAGE (PUBLIC)
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def home(request):
-    user_id = request.session.get("user_id")
+    user = request.user
 
     try:
         events = Event.objects.all()
     except Exception:
-        events = []  # fallback if DB fails
+        events = []
 
     return render(request, "home.html", {
         "events": events,
-        "user_id": user_id
+        "user": user
     })
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -251,7 +251,6 @@ def register_event(request, event_id):
 
     return redirect("my_registrations")
 
-
 @login_required
 def cancel_registration(request, registration_id):
 
@@ -260,7 +259,7 @@ def cancel_registration(request, registration_id):
     registration = get_object_or_404(
         Registration,
         pk=registration_id,
-        recruiter_id=user_id
+        recruiter=user
     )
 
     # prevent cancelling twice
@@ -279,11 +278,10 @@ def cancel_registration(request, registration_id):
 
     registration.status = status
     registration.cancel_datetime = timezone.now()
-    registration.cancelled_by_id = user_id
+    registration.cancelled_by = user
     registration.save()
 
     return redirect("my_registrations")
-
 
 @login_required
 def my_registrations(request):
@@ -337,4 +335,12 @@ def admin_registrations(request):
 
     return render(request, "registrations/admin_registrations.html", {
         "registrations": registrations
+    })
+
+@login_required
+def event_detail(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+
+    return render(request, "events/event_detail.html", {
+        "event": event
     })
