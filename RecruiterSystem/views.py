@@ -406,3 +406,14 @@ def override_registration(request, registration_id):
     registration.save()
 
     return redirect("admin_registrations")
+
+@login_required
+def delete_event(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+
+    if request.method == "POST":
+        Registration.objects.filter(event=event).delete()
+        event.delete()
+        return redirect("manage_events")
+
+    return redirect("manage_events")
