@@ -74,16 +74,16 @@ class Signup(View):
 #                       HOMEPAGE (PUBLIC)
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def home(request):
-    user_id = request.session.get("user_id")
+    user = request.user
 
     try:
         events = Event.objects.all()
     except Exception:
-        events = []  # fallback if DB fails
+        events = []
 
     return render(request, "home.html", {
         "events": events,
-        "user_id": user_id
+        "user": user
     })
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -228,6 +228,8 @@ def event_detail(request, event_id):
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                       REGISTRATIONS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+@login_required
 def register_event(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
 
@@ -249,6 +251,7 @@ def register_event(request, event_id):
 
     return redirect("my_registrations")
 
+@login_required
 def cancel_registration(request, registration_id):
     registration = get_object_or_404(
         Registration,
@@ -256,8 +259,16 @@ def cancel_registration(request, registration_id):
         recruiter=request.user
     )
 
-    # prevent cancelling twice
-    if registration.status.startswith("CANCELLED"):
+    if (
+        user != registration.recruiter
+        and user.role not in [Role.ADMIN, Role.EVENT_COORDINATOR]
+    ):
+        return redirect("home")
+
+    if registration.status and "CANCELLED" in registration.status:
+        return redirect("my_registrations")
+
+    if not registration.event or not registration.event.event_datetime:
         return redirect("my_registrations")
 
     event_date = registration.event.event_datetime
@@ -277,6 +288,7 @@ def cancel_registration(request, registration_id):
 
     return redirect("my_registrations")
 
+@login_required
 def my_registrations(request):
     # user_id = request.session.get("user_id")
     # if not user_id:
@@ -287,16 +299,6 @@ def my_registrations(request):
     registrations_qs = Registration.objects.select_related("event").filter(
         recruiter=request.user
     )
-
-    registrations = []
-
-    for r in registrations_qs:
-        registrations.append({
-            "registration_id": r.registration_id,
-            "event_name": r.event.event_name,
-            "status": r.status,
-            "registration_datetime": r.registration_datetime,
-        })
 
     return render(request, "registrations/my_registrations.html", {
         "registrations": registrations
@@ -326,3 +328,46 @@ def admin_registrations(request):
     return render(request, "registrations/admin_registrations.html", {
         "registrations": registrations
     })
+
+@login_required
+def approve_registration(request, registration_id):
+
+    user = request.user
+
+    if user.role not in [Role.ADMIN, Role.EVENT_COORDINATOR]:
+        return redirect("home")
+
+    registration = get_object_or_404(
+        Registration,
+        pk=registration_id
+    )
+
+    # optional safety: coordinators only manage their own events
+    if (
+        user.role == Role.EVENT_COORDINATOR
+        and registration.event.created_by != user
+    ):
+        return redirect("home")
+
+    registration.status = "APPROVED"
+    registration.save()
+
+    return redirect(request.META.get("HTTP_REFERER", "home"))
+
+@login_required
+def override_registration(request, registration_id):
+
+    user = request.user
+
+    if user.role != Role.ADMIN:
+        return redirect("home")
+
+    registration = get_object_or_404(
+        Registration,
+        pk=registration_id
+    )
+
+    registration.status = "APPROVED"
+    registration.save()
+
+    return redirect("admin_registrations")
