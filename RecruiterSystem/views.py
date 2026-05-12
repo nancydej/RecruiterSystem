@@ -258,9 +258,19 @@ def cancel_registration(request, registration_id):
 
     registration = get_object_or_404(
         Registration,
-        pk=registration_id,
-        recruiter=user
+        pk=registration_id
     )
+
+    # only allow:
+    # recruiter who owns registration
+    # admin
+    # event coordinator
+    if (
+        user != registration.recruiter
+        and user.role != Role.ADMIN
+        and user.role != Role.EVENT_COORDINATOR
+    ):
+        return redirect("home")
 
     # prevent cancelling twice
     if registration.status.startswith("CANCELLED"):
@@ -280,6 +290,13 @@ def cancel_registration(request, registration_id):
     registration.cancel_datetime = timezone.now()
     registration.cancelled_by = user
     registration.save()
+
+    # redirect based on role
+    if user.role == Role.ADMIN:
+        return redirect("admin_registrations")
+
+    elif user.role == Role.EVENT_COORDINATOR:
+        return redirect("coordinator_registrations")
 
     return redirect("my_registrations")
 
@@ -336,3 +353,46 @@ def admin_registrations(request):
     return render(request, "registrations/admin_registrations.html", {
         "registrations": registrations
     })
+
+@login_required
+def approve_registration(request, registration_id):
+
+    user = request.user
+
+    if user.role not in [Role.ADMIN, Role.EVENT_COORDINATOR]:
+        return redirect("home")
+
+    registration = get_object_or_404(
+        Registration,
+        pk=registration_id
+    )
+
+    # optional safety: coordinators only manage their own events
+    if (
+        user.role == Role.EVENT_COORDINATOR
+        and registration.event.created_by != user
+    ):
+        return redirect("home")
+
+    registration.status = "APPROVED"
+    registration.save()
+
+    return redirect(request.META.get("HTTP_REFERER", "home"))
+
+@login_required
+def override_registration(request, registration_id):
+
+    user = request.user
+
+    if user.role != Role.ADMIN:
+        return redirect("home")
+
+    registration = get_object_or_404(
+        Registration,
+        pk=registration_id
+    )
+
+    registration.status = "APPROVED"
+    registration.save()
+
+    return redirect("admin_registrations")
