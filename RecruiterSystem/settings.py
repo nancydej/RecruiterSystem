@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-from tkinter.constants import YES
 
 import pymysql
 pymysql.install_as_MySQLdb()
@@ -83,7 +82,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'group5',
         'USER': 'root',
-        'PASSWORD': '$$KashIsTheGOAT$$GjirokasterAlbaniaBaby1221',
+        'PASSWORD': 'Admin123',
+       # 'PASSWORD': '$$KashIsTheGOAT$$GjirokasterAlbaniaBaby1221',
         'HOST': 'localhost',
         'PORT': '3306', # Default MySQL port
     }
