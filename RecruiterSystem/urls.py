@@ -35,16 +35,10 @@ urlpatterns = [
     path('edit-user/<int:user_id>/', views.edit_user, name='edit_user'),
     path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
     path('register/<int:event_id>/', views.register_event, name='register_event'),
-    path("registrations/<int:registration_id>/approve/", views.approve_registration, name="approve_registration"),
-    path("registrations/<int:registration_id>/override/", views.override_registration, name="override_registration"),
     path('cancel/<int:registration_id>/', views.cancel_registration, name='cancel_registration'),
     path('my-registrations/', views.my_registrations, name='my_registrations'),
     path('events/', views.manage_events, name='manage_events'),
     path('events/add/', views.add_event, name='add_event'),
     path('events/edit/<int:event_id>/', views.edit_event, name='edit_event'),
     path('events/delete/<int:event_id>/', views.delete_event, name='delete_event'),
-    path('event/<int:event_id>/', views.event_detail, name='event_detail'),
-    path('coordinator-registrations/', views.coordinator_registrations, name='coordinator_registrations'),
-    path('admin-registrations/', views.admin_registrations, name='admin_registrations'),
-
 ]
