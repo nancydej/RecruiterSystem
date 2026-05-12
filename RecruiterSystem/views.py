@@ -4,6 +4,8 @@ from .models import User, Role, Event, Registration
 from django.db import connection
 from django.contrib.auth import authenticate, login
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                       AUTHENTICATION
@@ -36,7 +38,7 @@ class Login(View):
 
 class Logout(View):
     def get(self, request):
-        request.session.flush()
+        logout(request)
         return redirect("login")
 
 class Signup(View):
@@ -90,56 +92,34 @@ def home(request):
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                           USERS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+@login_required
 def user_profile(request):
-    user_id = request.session.get("user_id")
-
-    if not user_id:
-        return redirect("login")
-
-    try:
-        user = User.objects.get(user_id=user_id)
-    except User.DoesNotExist:
-        return redirect("login")
-
-    # If the logged-in user is an Admin, send them to the admin profile page
-    if user.role == Role.ADMIN:
+    if request.user.role == Role.ADMIN:
         return redirect("admin_profile")
 
-    return render(request, "users/user_profile.html", {"user": user})
+    return render(request, "users/user_profile.html", {
+        "user": request.user
+    })
 
+@login_required
 def admin_profile(request):
-    user_id = request.session.get("user_id")
-
-    if not user_id:
+    if request.user.role != Role.ADMIN:
         return redirect("login")
 
-    admin = User.objects.filter(
-        user_id=user_id,
-        role=Role.ADMIN
-    ).first()
+    return render(request, "users/admin_profile.html", {
+        "admin": request.user
+    })
 
-    if not admin:
-        return redirect("login")
-
-    return render(request, "users/admin_profile.html", {"admin": admin})
-
-
+@login_required
 def manage_users(request):
-    user_id = request.session.get("user_id")
-
-    if not user_id:
-        return redirect("login")
-
-    admin = User.objects.filter(
-        user_id=user_id,
-        role=Role.ADMIN
-    ).first()
-
-    if not admin:
+    if request.user.role != Role.ADMIN:
         return redirect("home")
 
     users = User.objects.all()
-    return render(request, "users/manage_users.html", {"users": users})
+    return render(request, "users/manage_users.html", {
+        "users": users
+    })
 
 def add_user(request):
     if request.method == "POST":
