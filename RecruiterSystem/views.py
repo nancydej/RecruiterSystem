@@ -221,6 +221,23 @@ def delete_event(request, event_id):
     if request.method == "POST":
         event.delete()
     return redirect("manage_events")
+
+# EVENT DETAILS - view details
+
+@login_required
+def event_detail(request, event_id):
+
+    event = get_object_or_404(Event, pk=event_id)
+
+    already_registered = Registration.objects.filter(
+        event=event,
+        recruiter=request.user
+    ).exists()
+
+    return render(request, "events/event_detail.html", {
+        "event": event,
+        "already_registered": already_registered
+    })
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                       REGISTRATIONS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -257,23 +274,20 @@ def cancel_registration(request, registration_id):
     user = request.user
 
     registration = get_object_or_404(
-        Registration,
+        Registration.objects.select_related("event"),
         pk=registration_id
     )
 
-    # only allow:
-    # recruiter who owns registration
-    # admin
-    # event coordinator
     if (
         user != registration.recruiter
-        and user.role != Role.ADMIN
-        and user.role != Role.EVENT_COORDINATOR
+        and user.role not in [Role.ADMIN, Role.EVENT_COORDINATOR]
     ):
         return redirect("home")
 
-    # prevent cancelling twice
-    if registration.status.startswith("CANCELLED"):
+    if registration.status and "CANCELLED" in registration.status:
+        return redirect("my_registrations")
+
+    if not registration.event or not registration.event.event_datetime:
         return redirect("my_registrations")
 
     event_date = registration.event.event_datetime
@@ -286,12 +300,18 @@ def cancel_registration(request, registration_id):
     else:
         status = "CANCELLED_NO_REFUND"
 
-    registration.status = status
-    registration.cancel_datetime = timezone.now()
-    registration.cancelled_by = user
-    registration.save()
+    updated = Registration.objects.filter(
+        pk=registration_id,
+        status__in=["PENDING", "APPROVED"]
+    ).update(
+        status=status,
+        cancel_datetime=timezone.now(),
+        cancelled_by=user
+    )
 
-    # redirect based on role
+    if registration.event.event_datetime < timezone.now():
+        return redirect("my_registrations")
+
     if user.role == Role.ADMIN:
         return redirect("admin_registrations")
 
@@ -305,19 +325,9 @@ def my_registrations(request):
 
     user = request.user
 
-    registrations_qs = Registration.objects.select_related("event").filter(
+    registrations = Registration.objects.select_related("event").filter(
         recruiter=user
     )
-
-    registrations = [
-        {
-            "registration_id": r.registration_id,
-            "event_name": r.event.event_name,
-            "status": r.status,
-            "registration_datetime": r.registration_datetime,
-        }
-        for r in registrations_qs
-    ]
 
     return render(request, "registrations/my_registrations.html", {
         "registrations": registrations
