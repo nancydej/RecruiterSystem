@@ -82,15 +82,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'group5',
         'USER': 'root',
-<<<<<<< HEAD
-<<<<<<< HEAD
         'PASSWORD': 'Admin123',
-=======
-        'PASSWORD': '$$KashIsTheGOAT$$GjirokasterAlbaniaBaby1221',
->>>>>>> e7ecefc (resolve pyc conflicts)
-=======
-        'PASSWORD': '$$KashIsTheGOAT$$GjirokasterAlbaniaBaby1221',
->>>>>>> e7ecefc (resolve pyc conflicts)
+       # 'PASSWORD': '$$KashIsTheGOAT$$GjirokasterAlbaniaBaby1221',
         'HOST': 'localhost',
         'PORT': '3306', # Default MySQL port
     }
