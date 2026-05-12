@@ -137,7 +137,15 @@
                 {% if request.user.role == "Admin" or request.user.role == "Event Coordinator" %}
                 <td>
                     <div class="actions">
-                        <a href="{% url 'edit_event' event.event_id %}" class="btn btn-warning">Edit</a>
+
+                        <a href="{% url 'edit_event' event.event_id %}" class="btn btn-warning">
+                            Edit
+                        </a>
+
+                        <a href="{% url 'event_detail' event.event_id %}" class="btn btn-primary">
+                            View Details
+                        </a>
+
                         <form method="POST" action="{% url 'delete_event' event.event_id %}" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger"
@@ -146,6 +154,7 @@
                                 Delete
                             </button>
                         </form>
+
                     </div>
                 </td>
                 {% endif %}

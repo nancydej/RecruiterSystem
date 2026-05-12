@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ event.event_name }}</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: #5545FE;
+        }
+
+        .info p {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 14px;
+            background: #5545FE;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>{{ event.event_name }}</h1>
+
+    <div class="info">
+        <p><strong>Location:</strong> {{ event.city }}, {{ event.state }}</p>
+        <p><strong>Date:</strong> {{ event.event_datetime }}</p>
+        <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+
+        {% if event.description %}
+            <p><strong>Description:</strong> {{ event.description }}</p>
+        {% endif %}
+
+        <p><strong>Created By:</strong> {{ event.created_by.username }}</p>
+    </div>
+
+    <a href="{% url 'home' %}" class="btn">Back to Events</a>
+
+</div>
+
+</body>
+</html>
