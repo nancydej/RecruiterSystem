@@ -221,22 +221,19 @@ def delete_event(request, event_id):
     if request.method == "POST":
         event.delete()
     return redirect("manage_events")
+
+def event_detail(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    return render(request, "events/event_detail.html", {"event": event})
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                       REGISTRATIONS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def register_event(request, event_id):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("login")
-
-    user = get_object_or_404(User, pk=user_id)
     event = get_object_or_404(Event, pk=event_id)
 
-    # prevent duplicate registration
-    if Registration.objects.filter(recruiter=user, event=event).exists():
+    if Registration.objects.filter(recruiter=request.user, event=event).exists():
         return redirect("my_registrations")
 
-    # capacity logic
     approved_count = Registration.objects.filter(
         event=event,
         status="APPROVED"
@@ -245,7 +242,7 @@ def register_event(request, event_id):
     status = "APPROVED" if approved_count < event.capacity else "PENDING"
 
     Registration.objects.create(
-        recruiter=user,
+        recruiter=request.user,
         event=event,
         status=status
     )
@@ -253,14 +250,10 @@ def register_event(request, event_id):
     return redirect("my_registrations")
 
 def cancel_registration(request, registration_id):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("login")
-
     registration = get_object_or_404(
         Registration,
         pk=registration_id,
-        recruiter_id=user_id
+        recruiter=request.user
     )
 
     # prevent cancelling twice
@@ -279,20 +272,20 @@ def cancel_registration(request, registration_id):
 
     registration.status = status
     registration.cancel_datetime = timezone.now()
-    registration.cancelled_by_id = user_id
+    registration.cancelled_by_id = request.user
     registration.save()
 
     return redirect("my_registrations")
 
 def my_registrations(request):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("login")
-
-    user = User.objects.get(pk=user_id)
+    # user_id = request.session.get("user_id")
+    # if not user_id:
+    #     return redirect("login")
+    #
+    # user = User.objects.get(pk=user_id)
 
     registrations_qs = Registration.objects.select_related("event").filter(
-        recruiter=user
+        recruiter=request.user
     )
 
     registrations = []
@@ -311,13 +304,8 @@ def my_registrations(request):
 
 @login_required
 def coordinator_registrations(request):
-    user_id = request.session.get("user_id")
-    role = request.session.get("role")
-
-    if role != "Event Coordinator":
+    if request.user.role != Role.EVENT_COORDINATOR:
         return redirect("home")
-
-    user = get_object_or_404(User, pk=user_id)
 
     registrations = Registration.objects.select_related("event", "recruiter").filter(
         event__created_by=user
@@ -330,9 +318,7 @@ def coordinator_registrations(request):
 
 @login_required
 def admin_registrations(request):
-    role = request.session.get("role")
-
-    if role != "Admin":
+    if request.user.role != Role.ADMIN:
         return redirect("home")
 
     registrations = Registration.objects.select_related("event", "recruiter").all()
