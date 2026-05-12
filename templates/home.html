@@ -17,7 +17,10 @@
             color: #333;
         }
 
-        /* NAVBAR */
+        /* =========================
+           NAVBAR
+        ========================= */
+
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -48,12 +51,19 @@
             opacity: 0.8;
         }
 
-        /* PAGE */
+        /* =========================
+           PAGE CONTAINER
+        ========================= */
+
         .page-container {
             max-width: 1100px;
             margin: 0 auto;
             padding: 20px;
         }
+
+        /* =========================
+           HERO
+        ========================= */
 
         .hero {
             text-align: center;
@@ -69,14 +79,20 @@
             color: #666;
         }
 
-        /* GRID */
+        /* =========================
+           GRID
+        ========================= */
+
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
-        /* CARD */
+        /* =========================
+           CARD
+        ========================= */
+
         .card {
             background: white;
             border-radius: 12px;
@@ -92,7 +108,10 @@
             transform: translateY(-3px);
         }
 
-        /* BANNER */
+        /* =========================
+           BANNER
+        ========================= */
+
         .card-banner {
             background: #5545FE;
             color: white;
@@ -106,7 +125,10 @@
             margin: 0;
         }
 
-        /* INFO */
+        /* =========================
+           INFO
+        ========================= */
+
         .event-info p {
             margin: 8px 0;
             font-size: 14px;
@@ -118,7 +140,10 @@
             font-size: 13px;
         }
 
-        /* ACTIONS */
+        /* =========================
+           ACTIONS
+        ========================= */
+
         .event-actions {
             margin-top: 12px;
             display: flex;
@@ -144,7 +169,15 @@
             color: white;
         }
 
-        /* EMPTY */
+        .btn.view {
+            background: #e5e7eb;
+            color: #111;
+        }
+
+        /* =========================
+           EMPTY STATE
+        ========================= */
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -159,6 +192,7 @@
 
 <body>
 
+<!-- NAVBAR -->
 <nav class="navbar">
     <div class="logo">Recruiter System</div>
 
@@ -171,11 +205,13 @@
 
 <div class="page-container">
 
+    <!-- HERO -->
     <header class="hero">
         <h1>Upcoming Recruitment Events</h1>
         <p>Discover, register, and manage your participation in events</p>
     </header>
 
+    <!-- EVENTS -->
     <section>
 
         {% if events %}
@@ -201,17 +237,21 @@
 
                     <div class="event-actions">
 
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'register_event' event.event_id %}" class="btn register">
-                                Register
-                            </a>
-                        {% else %}
-                            <a href="{% url 'login' %}" class="btn register">
-                                Login to Register
-                            </a>
-                        {% endif %}
+                {% if user.is_authenticated %}
+                    <a href="{% url 'register_event' event.event_id %}" class="btn register">
+                        Register
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn register">
+                        Login to Register
+                    </a>
+                {% endif %}
 
-                    </div>
+                <a href="{% url 'event_detail' event.event_id %}" class="btn view">
+                    View Details
+                </a>
+
+            </div>
 
                 </div>
                 {% endfor %}

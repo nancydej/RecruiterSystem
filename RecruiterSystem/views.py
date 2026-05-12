@@ -74,16 +74,16 @@ class Signup(View):
 #                       HOMEPAGE (PUBLIC)
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def home(request):
-    user_id = request.session.get("user_id")
+    user = request.user
 
     try:
         events = Event.objects.all()
     except Exception:
-        events = []  # fallback if DB fails
+        events = []
 
     return render(request, "home.html", {
         "events": events,
-        "user_id": user_id
+        "user": user
     })
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -221,19 +221,21 @@ def delete_event(request, event_id):
     if request.method == "POST":
         event.delete()
     return redirect("manage_events")
-
-def event_detail(request, event_id):
-    event = get_object_or_404(Event, pk=event_id)
-    return render(request, "events/event_detail.html", {"event": event})
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                       REGISTRATIONS
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+@login_required
 def register_event(request, event_id):
+
+    user = request.user
     event = get_object_or_404(Event, pk=event_id)
 
-    if Registration.objects.filter(recruiter=request.user, event=event).exists():
+    # prevent duplicate registration
+    if Registration.objects.filter(recruiter=user, event=event).exists():
         return redirect("my_registrations")
 
+    # capacity logic
     approved_count = Registration.objects.filter(
         event=event,
         status="APPROVED"
@@ -242,18 +244,22 @@ def register_event(request, event_id):
     status = "APPROVED" if approved_count < event.capacity else "PENDING"
 
     Registration.objects.create(
-        recruiter=request.user,
+        recruiter=user,
         event=event,
         status=status
     )
 
     return redirect("my_registrations")
 
+@login_required
 def cancel_registration(request, registration_id):
+
+    user = request.user
+
     registration = get_object_or_404(
         Registration,
         pk=registration_id,
-        recruiter=request.user
+        recruiter=user
     )
 
     # prevent cancelling twice
@@ -272,31 +278,29 @@ def cancel_registration(request, registration_id):
 
     registration.status = status
     registration.cancel_datetime = timezone.now()
-    registration.cancelled_by_id = request.user
+    registration.cancelled_by = user
     registration.save()
 
     return redirect("my_registrations")
 
+@login_required
 def my_registrations(request):
-    # user_id = request.session.get("user_id")
-    # if not user_id:
-    #     return redirect("login")
-    #
-    # user = User.objects.get(pk=user_id)
+
+    user = request.user
 
     registrations_qs = Registration.objects.select_related("event").filter(
-        recruiter=request.user
+        recruiter=user
     )
 
-    registrations = []
-
-    for r in registrations_qs:
-        registrations.append({
+    registrations = [
+        {
             "registration_id": r.registration_id,
             "event_name": r.event.event_name,
             "status": r.status,
             "registration_datetime": r.registration_datetime,
-        })
+        }
+        for r in registrations_qs
+    ]
 
     return render(request, "registrations/my_registrations.html", {
         "registrations": registrations
@@ -304,7 +308,10 @@ def my_registrations(request):
 
 @login_required
 def coordinator_registrations(request):
-    if request.user.role != Role.EVENT_COORDINATOR:
+
+    user = request.user
+
+    if user.role != Role.EVENT_COORDINATOR:
         return redirect("home")
 
     registrations = Registration.objects.select_related("event", "recruiter").filter(
@@ -318,11 +325,22 @@ def coordinator_registrations(request):
 
 @login_required
 def admin_registrations(request):
-    if request.user.role != Role.ADMIN:
+
+    user = request.user
+
+    if user.role != Role.ADMIN:
         return redirect("home")
 
     registrations = Registration.objects.select_related("event", "recruiter").all()
 
     return render(request, "registrations/admin_registrations.html", {
         "registrations": registrations
+    })
+
+@login_required
+def event_detail(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+
+    return render(request, "events/event_detail.html", {
+        "event": event
     })
