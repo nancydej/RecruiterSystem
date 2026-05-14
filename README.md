@@ -25,7 +25,7 @@ Features include:
 - Registration approval/cancellation
 - MySQL views, triggers, procedures, and functions
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Requirements
 
@@ -102,7 +102,7 @@ Database setup:
   2. View and manage all registrations + events
   4. Oversee system activity
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Notes
   - Ensure MySQL Server is running before starting Django
