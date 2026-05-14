@@ -1,6 +1,9 @@
 # Project Title: Recruiter Event Management System
+
 Course: CS557 - Intro to Database Systems
+
 Group: 5
+
 Names:
 - Amber Brellenthin
 - Phomany Chanhdara
@@ -46,15 +49,25 @@ Database setup:
   2. Run the provided SQL script and execute
   3. Open: recruiter_system/settings.py 
   4. Update this DATABASES section with your MySQL username and password:
+ 
         DATABASES = {
-            'default': {
+
+         'default': {
+
             'ENGINE': 'django.db.backends.mysql',
+
             'NAME': 'group5',
+
             'USER': 'your_mysql_username',
+
             'PASSWORD': 'your_mysql_password',
+
             'HOST': 'localhost',
+
             'PORT': '3306',
+
           }
+
         } 
 
 # Running the Project:
