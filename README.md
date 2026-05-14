@@ -49,26 +49,27 @@ Database setup:
   2. Run the provided SQL script and execute
   3. Open: recruiter_system/settings.py 
   4. Update this DATABASES section with your MySQL username and password:
- 
-        DATABASES = {
+   
+          DATABASES = {
+     
+           'default': {
 
-         'default': {
+              'ENGINE': 'django.db.backends.mysql',
 
-            'ENGINE': 'django.db.backends.mysql',
+              'NAME': 'group5',
 
-            'NAME': 'group5',
+              'USER': 'your_mysql_username',
 
-            'USER': 'your_mysql_username',
+              'PASSWORD': 'your_mysql_password',
 
-            'PASSWORD': 'your_mysql_password',
+              'HOST': 'localhost',
 
-            'HOST': 'localhost',
+              'PORT': '3306',
 
-            'PORT': '3306',
+            }
 
-          }
+          } 
 
-        } 
 
 # Running the Project:
   1. Start the Django server: python manage.py runserver
