@@ -1,48 +1,199 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Add User</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #5545FE;
+            padding: 14px 24px;
+            color: white;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 16px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .page-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .hero p {
+            color: #666;
+        }
+
+        .form-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+    </style>
 </head>
+
 <body>
 
-<h1>Add New User</h1>
+<nav class="navbar">
+    <div class="logo">Recruiter System</div>
 
-<form method="POST">
-    {% csrf_token %}
+    <ul class="nav-links">
+        <li><a href="{% url 'home' %}">Events</a></li>
+        <li><a href="{% url 'manage_users' %}">Users</a></li>
+        <li><a href="{% url 'logout' %}">Logout</a></li>
+    </ul>
+</nav>
 
-    <p>Username:</p>
-    <input type="text" name="username" required>
+<div class="page-container">
 
-    <p>First Name:</p>
-    <input type="text" name="first_name">
+    <div class="hero">
+        <h1>Add New User</h1>
+        <p>Create a new account and assign a role</p>
+    </div>
 
-    <p>Last Name:</p>
-    <input type="text" name="last_name">
+    <div class="form-card">
 
-    <p>Email:</p>
-    <input type="email" name="email" required>
+        <form method="POST">
+            {% csrf_token %}
 
-    <p>Password:</p>
-    <input type="text" name="password" required>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
 
-    <p>Phone Number:</p>
-    <input type="text" name="phone_number" required>
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" name="first_name">
+            </div>
 
-    <p>Role:</p>
-    <select name="role" required>
-        <option value="Admin">Admin</option>
-        <option value="Event Coordinator">Event Coordinator</option>
-        <option value="Recruiter">Recruiter</option>
-    </select>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" name="last_name">
+            </div>
 
-    <br><br>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
 
-    <button type="submit">Add User</button>
-</form>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
 
-<br>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" name="phone_number" required>
+            </div>
 
-<a href="/manage-users/">Back</a>
+            <div class="form-group">
+                <label>Role</label>
+                <select name="role" required>
+                    <option value="Admin">Admin</option>
+                    <option value="Event Coordinator">Event Coordinator</option>
+                    <option value="Recruiter">Recruiter</option>
+                </select>
+            </div>
+
+            <div class="actions">
+                <a href="{% url 'manage_users' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Add User</button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 </body>
 </html>
