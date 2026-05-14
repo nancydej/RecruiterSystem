@@ -1,8 +1,12 @@
 # Project Title: Recruiter Event Management System
 Course: CS557 - Intro to Database Systems
 Group: 5
-Names: Amber Brellenthin   |   Phomany Chanhdara   |
-Nancy De Jesus   |   Saksham Dhirar   |   Kelvin Miftar Mahmuti
+Names:
+- Amber Brellenthin
+- Phomany Chanhdara
+- Nancy De Jesus
+- Saksham Dhirar
+- Kelvin Miftar Mahmuti
 
 
 This project is a Django + MySQL web application for managing recruiter events and registrations.
@@ -29,7 +33,7 @@ Install the following before running the project
   - PyCharm / VSCode
   - Any additional required python packages/installations
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 # Setup Instructions
   1. Clone the Repository using the url (HTTPS)
@@ -58,7 +62,7 @@ Database setup:
   2. When it compiles, it will open the application in your browser
      and provide a link similar to this: http://***.*.*.*:****/ 
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 # What to Expect?
   Once you log in, users are redirected based on their role:
