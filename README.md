@@ -1,12 +1,9 @@
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-Project Title: Recruiter Event Management System
+# Project Title: Recruiter Event Management System
 Course: CS557 - Intro to Database Systems
 Group: 5
 Names: Amber Brellenthin   |   Phomany Chanhdara   |
 Nancy De Jesus   |   Saksham Dhirar   |   Kelvin Miftar Mahmuti
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 This project is a Django + MySQL web application for managing recruiter events and registrations.
 
@@ -93,4 +90,4 @@ Database setup:
   - Ensure MySQL Server is running before starting Django
   - Verify database credentials in settings.py
   - If pages fail to load, confirm migrations/database setup completed successfully
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
